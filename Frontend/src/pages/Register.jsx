@@ -13,7 +13,7 @@ export default  function register(){
     return (
     <div className="bg:slate-750, m-10">
         <form
-        onSubmit={Register}>
+        onSubmit={register}>
             <h2>
                 Citizen Register
             </h2>
