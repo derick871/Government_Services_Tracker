@@ -1,23 +1,52 @@
-import client from './client';
+import client from "./client";
 
-export const authService = {
-  // Login - Server sets HTTP-Only cookies in response headers
-  login(credentials) {
-    return client.post('/auth/login', credentials);
-  },
+export const login = async (credentials) => {
+  return client.post("/auth/login/", credentials);
+};
 
-  // Logout - Server clears HTTP-Only cookies
-  logout() {
-    return client.post('/auth/logout');
-  },
+export const refreshToken = async (refresh) => {
+  return client.post("/auth/refresh/", {
+    refresh,
+  });
+};
 
-  // Refresh active session cookies
-  refreshToken(options = {}) {
-    return client.post('/auth/refresh', {}, options);
-  },
+export const logout = () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user");
+};
 
-  // Fetch session state (works in both SSR and Client)
-  getCurrentUser(options = {}) {
-    return client.get('/auth/me', options);
-  },
+export const getCurrentUser = () => {
+  const user = localStorage.getItem("user");
+
+  return user ? JSON.parse(user) : null;
+};
+
+export const isAuthenticated = () => {
+  return Boolean(
+    localStorage.getItem("access_token")
+  );
+};
+
+export const saveSession = (data) => {
+  if (data.access) {
+    localStorage.setItem(
+      "access_token",
+      data.access
+    );
+  }
+
+  if (data.refresh) {
+    localStorage.setItem(
+      "refresh_token",
+      data.refresh
+    );
+  }
+
+  if (data.user) {
+    localStorage.setItem(
+      "user",
+      JSON.stringify(data.user)
+    );
+  }
 };
