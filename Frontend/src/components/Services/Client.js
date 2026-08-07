@@ -1,42 +1,55 @@
-import axios from 'axios';
+import axios from "axios";
 
-const isServer = typeof window === 'undefined';
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:8000/api";
 
 const client = axios.create({
-  baseURL: isServer
-    ? process.env.INTERNAL_API_URL || 'http://localhost:8000/api/v1' 
-    : process.env.NEXT_PUBLIC_API_URL || '/api/v1',                   
+  baseURL: API_URL,
   timeout: 10000,
-  headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, 
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
+// Add JWT to requests
 client.interceptors.request.use(
   (config) => {
-    if (isServer && config.ssrContext?.req?.headers?.cookie) {
-      config.headers.Cookie = config.ssrContext.req.headers.cookie;
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: 
+// Handle API responses
 client.interceptors.response.use(
   (response) => response.data,
-  async (error) => {
-    const status = error.response?.status || 500;
 
-    // Client-only redirect on auth failure
-    if (status === 401 && !isServer) {
-      // Redirect to login on expired browser session
-      window.location.href = `/login?expired=true`;
+  async (error) => {
+    const status = error.response?.status;
+
+    // Session expired
+    if (status === 401) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/login?expired=true";
     }
 
     const formattedError = {
-      status,
-      message: error.response?.data?.message || 'An unexpected error occurred.',
-      errors: error.response?.data?.errors || null,
+      status: status || 500,
+      message:
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "An unexpected error occurred.",
+      errors:
+        error.response?.data || null,
     };
 
     return Promise.reject(formattedError);
