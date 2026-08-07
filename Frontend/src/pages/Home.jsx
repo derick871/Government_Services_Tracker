@@ -15,7 +15,7 @@ export default function Home() {
 
             <div className='flex, justify-center, m-10'>
                 <Link to="login" className='bg:amber-500, text-white, p-2, rounded-md'>
-                Login 
+                Login / 
                 </Link>
 
                 <Link to="register" className='bg:amber-500, text-white, p-2, rounded-md'>

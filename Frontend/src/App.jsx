@@ -5,9 +5,10 @@ import Register from  "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminConsole from "./pages/AdminConsole";
-import TrackService from "./pages/TrackService";
+import TrackService from "./pages/TrackService"
 
 export default function App() {
+  
   return (
     <BrowserRouter>
       <Routes>
