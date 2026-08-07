@@ -1,22 +1,45 @@
-import client from './Client';
+import client from "./client";
 
-export const permitService = {
-    // Fetch all permits
-    getpermits(params = {}, options = {}) {
-        return client.get('/permits', { params, ...options });
-    },
+// Get permits
+export const getPermits = async (
+  params = {}
+) => {
+  return client.get("/permits/", {
+    params,
+  });
+};
 
-    getpermitById(permitId, options = {}){
-        return client.get(`/permits/${permitId}`, options);
-    },
+// Get permit
+export const getPermitById = async (
+  permitId
+) => {
+  return client.get(
+    `/permits/${permitId}/`
+  );
+};
 
-    createpermit(permitData, options = {}){
-        return client.post('/permits', permitData, options)
-    },
+// Create permit
+export const createPermit = async (
+  permitData
+) => {
+  return client.post(
+    "/permits/",
+    permitData
+  );
+};
 
-   uploadDocument(permitId, formData) {
-    return client.post(`/permits/${permitId}/documents`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
+// Upload permit document
+export const uploadPermitDocument = async (
+  permitId,
+  formData
+) => {
+  return client.post(
+    `/permits/${permitId}/documents/`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 };
