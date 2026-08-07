@@ -1,15 +1,33 @@
-import client from './client';
+import {
+  getApplications,
+  createApplication,
+  getApplication,
+} from "./applications";
 
-export const bursaryService = {
-  getApplications(params, options = {}) {
-    return client.get('/bursaries', { params, ...options });
-  },
+// Get bursary applications
+export const getBursaryApplications = async () => {
+  const applications = await getApplications();
 
-  submitApplication(data) {
-    return client.post('/bursaries', data);
-  },
+  return applications.filter(
+    (application) =>
+      application.service_type === "BURSARY"
+  );
+};
 
-  checkStatus(applicationId, options = {}) {
-    return client.get(`/bursaries/${applicationId}/status`, options);
-  },
+// Submit bursary application
+export const submitBursaryApplication = async (
+  data
+) => {
+  return createApplication({
+    county_id: data.county_id,
+    service_type: "BURSARY",
+    payload_data: data.payload_data,
+  });
+};
+
+// Check bursary status
+export const checkBursaryStatus = async (
+  trackingNumber
+) => {
+  return getApplication(trackingNumber);
 };
