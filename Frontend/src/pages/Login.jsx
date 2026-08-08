@@ -148,10 +148,12 @@ export default function Login() {
             {/* Login Button */}
             <button
               type="submit"
+              onclick={() => navigate("/dashboard")}
               disabled={loading}
               className="w-full rounded-md bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Login"}
+              
             </button>
 
           </form>
