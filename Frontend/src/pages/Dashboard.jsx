@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getApplications } from "../components/Services/Client";
+import { getApplications } from "../Services/Client";
 
 export default function Dashboard() {
   const [applications, setApplications] = useState([]);
