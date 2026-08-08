@@ -1,24 +1,27 @@
 import axios from "axios";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://127.0.0.1:8000/api";
-
 const client = axios.create({
-  baseURL: API_URL,
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    "http://127.0.0.1:8000/api",
+
   timeout: 10000,
+
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Add JWT to requests
+// Add JWT token
 client.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem(
+      "access_token"
+    );
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization =
+        `Bearer ${token}`;
     }
 
     return config;
@@ -26,33 +29,37 @@ client.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle API responses
+// Handle responses
 client.interceptors.response.use(
   (response) => response.data,
 
-  async (error) => {
+  (error) => {
     const status = error.response?.status;
 
-    // Session expired
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      "Something went wrong.";
+
     if (status === 401) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
 
-      window.location.href = "/login?expired=true";
+      if (
+        window.location.pathname !== "/login" &&
+        window.location.pathname !== "/register"
+      ) {
+        window.location.href =
+          "/login?expired=true";
+      }
     }
 
-    const formattedError = {
+    return Promise.reject({
       status: status || 500,
-      message:
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
-        "An unexpected error occurred.",
-      errors:
-        error.response?.data || null,
-    };
-
-    return Promise.reject(formattedError);
+      message,
+      errors: error.response?.data || null,
+    });
   }
 );
 

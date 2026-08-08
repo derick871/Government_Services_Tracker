@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   login,
   saveSession,
-} from "../services/auth";
+} from '../components/auth'
 
 export default function Login() {
   const navigate = useNavigate();
