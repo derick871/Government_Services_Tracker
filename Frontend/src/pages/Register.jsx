@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import client from "../components/Services/Client";
+import client from "../Services/Client";
 
 export default function Register() {
   const navigate = useNavigate();
