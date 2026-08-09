@@ -1,91 +1,142 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-from .models import Application, CountyNotice
-from .FSM_transitions import get_allowed_next_states
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer
+)
 
 User = get_user_model()
 
-# =====================================================================
-# Authentication & Identity Serializers
-# =====================================================================
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+# ============================================================
+# JWT LOGIN SERIALIZER
+# ============================================================
+
+class CustomTokenObtainPairSerializer(
+    TokenObtainPairSerializer
+):
     """
-    Customizes JWT token claims to inject RBAC context (roles) directly 
-    into the encrypted client token payload.
+    Authenticate users using email/password and
+    add RBAC information to the JWT.
     """
+
     @classmethod
     def get_token(cls, user):
+
         token = super().get_token(user)
 
-        # Inject custom claims for front-end routing gates
-        token['role'] = getattr(user, 'role', 'CITIZEN')
-        token['email'] = user.email
-        token['county_code'] = getattr(user, 'county_code', None) or "GLOBAL"
-        
+        token["email"] = user.email
+        token["role"] = user.role
+        token["county_code"] = (
+            user.county_code or "GLOBAL"
+        )
+
         return token
 
+    def validate(self, attrs):
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    """ Handles secure account creation with automatic password hashing. """
-    password = serializers.CharField(write_only=True, min_length=8, style={'input_type': 'password'})
+        data = super().validate(attrs)
 
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'password', 'role', 'phone_number', 'county_code']
-        extra_kwargs = {
-            'role': {'required': False} 
+        data["user"] = {
+            "id": self.user.id,
+            "email": self.user.email,
+            "first_name": self.user.first_name,
+            "last_name": self.user.last_name,
+            "role": self.user.role,
+            "county_code": self.user.county_code,
         }
 
-    def validate(self, attrs):
-        # Enforcement rule: Officer accounts MUST be locked to a valid county zone string
-        if attrs.get('role') == 'OFFICER' and not attrs.get('county_code'):
+        return data
+
+
+# ============================================================
+# REGISTRATION SERIALIZER
+# ============================================================
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Handles public citizen registration.
+    """
+
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        style={
+            "input_type": "password"
+        }
+    )
+
+    password_confirm = serializers.CharField(
+        write_only=True,
+        style={
+            "input_type": "password"
+        }
+    )
+
+    class Meta:
+
+        model = User
+
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "password",
+            "password_confirm",
+            "phone_number",
+            "county_code",
+        ]
+
+        read_only_fields = ["id"]
+
+    # --------------------------------------------------------
+    # EMAIL VALIDATION
+    # --------------------------------------------------------
+
+    def validate_email(self, value):
+
+        value = value.lower().strip()
+
+        if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                {"county_code": "County officers must be assigned an administrative county location identifier."}
+                "An account with this email already exists."
             )
+
+        return value
+
+    # --------------------------------------------------------
+    # PASSWORD VALIDATION
+    # --------------------------------------------------------
+
+    def validate(self, attrs):
+
+        password = attrs.get("password")
+        password_confirm = attrs.get(
+            "password_confirm"
+        )
+
+        if password != password_confirm:
+            raise serializers.ValidationError({
+                "password_confirm":
+                    "Passwords do not match."
+            })
+
         return attrs
 
+    # --------------------------------------------------------
+    # CREATE USER
+    # --------------------------------------------------------
+
     def create(self, validated_data):
-        # account creation utilizing standard user manager for password hashing safety
-        return User.objects.create_user(**validated_data)
 
+        validated_data.pop("password_confirm")
 
-# =====================================================================
-# Core Operational Application Serializers (Fixes Your ImportError)
-# =====================================================================
+        password = validated_data.pop("password")
 
-class CountyNoticeSerializer(serializers.ModelSerializer):
-    """
-    Serializes scraped or indexed local municipal announcements, 
-    bursary forms, and regional tenders.
-    """
-    class Meta:
-        model = CountyNotice
-        fields = '__all__'
+        # Public registration always creates a citizen.
+        validated_data["role"] = "CITIZEN"
 
-
-class ApplicationSerializer(serializers.ModelSerializer):
-    """
-    Serializes workflow lifecycles for public applications. Automatically 
-    calculates dynamic variables like next available states for your UI buttons.
-    """
-    allowed_next_states = serializers.SerializerMethodField()
-    user_email = serializers.EmailField(source='user.email', read_only=True)
-
-    class Meta:
-        model = Application
-        fields = [
-            'id', 'tracking_number', 'service_type', 'status', 
-            'payload_data', 'county_code', 'created_at', 'updated_at',
-            'user_email', 'allowed_next_states'
-        ]
-        read_only_fields = ['id', 'tracking_number', 'status', 'created_at', 'updated_at']
-
-    def get_allowed_next_states(self, obj):
-        """
-        Invokes your state machine utility to inform the React frontend 
-        exactly which transition states to render dynamically.
-        """
-        return get_allowed_next_states(obj.status)
+        return User.objects.create_user(
+            password=password,
+            **validated_data
+        )
