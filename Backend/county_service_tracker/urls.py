@@ -21,4 +21,9 @@ urlpatterns = [
         "api/",
         include("Service_Tracker.urls"),
     ),
+
+    path(
+        "api/auth/",
+        include("authentication.urls"),
+    )
 ]
