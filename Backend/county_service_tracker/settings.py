@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     
     # Custom Core System Apps
     'Service_Tracker', 
+    'authentication',
 ]
 
 # Unified Identity Blueprint Router mapping custom RBAC User profiles
