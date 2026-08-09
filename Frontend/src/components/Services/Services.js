@@ -1,4 +1,4 @@
-import api from "./Client";
+import api from "./api";
 
 // Get citizen applications
 export const getApplications = () => {

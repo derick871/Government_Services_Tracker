@@ -1,4 +1,4 @@
-import client from "./client";
+import client from "./api";
 
 export const login = async (credentials) => {
   return client.post("/auth/login/", credentials);

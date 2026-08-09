@@ -1,4 +1,4 @@
-import client from "./client";
+import client from "./api";
 
 // Get permits
 export const getPermits = async (
