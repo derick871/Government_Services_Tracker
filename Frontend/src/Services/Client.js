@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const Client = axios.create({
+const client = axios.create({
   baseURL:
     import.meta.env.VITE_API_URL ||
     "http://127.0.0.1:8000/api",
@@ -12,38 +12,39 @@ const Client = axios.create({
   },
 });
 
-// Attach JWT
-api.interceptors.request.use(
+// Attach access token
+client.interceptors.request.use(
   (config) => {
-    const token =
-      localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
 
     if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
 );
 
-// Return response data
-api.interceptors.response.use(
+// Handle responses
+client.interceptors.response.use(
   (response) => response.data,
 
   (error) => {
     const status = error.response?.status;
 
     if (status === 401) {
-      localStorage.removeItem(
-        "access_token"
-      );
-
-      localStorage.removeItem(
-        "refresh_token"
-      );
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
 
       window.location.href = "/login";
+
+      return Promise.reject({
+        status: 401,
+        message: "Session expired. Please login again.",
+      });
     }
 
     return Promise.reject({
@@ -51,9 +52,10 @@ api.interceptors.response.use(
       message:
         error.response?.data?.detail ||
         error.response?.data?.message ||
+        error.message ||
         "Unable to communicate with the server.",
     });
   }
 );
 
-export default Client;
+export default client;

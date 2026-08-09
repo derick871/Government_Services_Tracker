@@ -1,4 +1,4 @@
-import client from "./Services/Client";
+import client from "./Services/api";
 
 // Login
 export const login = async (credentials) => {
