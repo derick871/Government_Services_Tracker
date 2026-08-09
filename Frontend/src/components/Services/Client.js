@@ -13,7 +13,7 @@ const Client = axios.create({
 });
 
 // Attach JWT
-api.interceptors.request.use(
+Client.interceptors.request.use(
   (config) => {
     const token =
       localStorage.getItem("access_token");
@@ -28,7 +28,7 @@ api.interceptors.request.use(
 );
 
 // Return response data
-api.interceptors.response.use(
+Client.interceptors.response.use(
   (response) => response.data,
 
   (error) => {
