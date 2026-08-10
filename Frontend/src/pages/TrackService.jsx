@@ -31,9 +31,9 @@ export default function TrackService({ applicationId = "123" }) {
   }, [applicationId]);
 
   // Handle asynchronous UI states defensively
-  if (loading) return <div className="p-8 text-slate-500 animate-pulse">Loading tracking history...</div>;
+  if (loading) return <div className="p-8 text-white animate-pulse">Loading tracking history...</div>;
   if (error) return <div className="p-8 text-red-500 font-medium">Error: {error}</div>;
-  if (!application) return <div className="p-8 text-slate-500">No application data found.</div>;
+  if (!application) return <div className="p-8 text-white">No application data found.</div>;
 
   const status = application.currentStatus; 
   
@@ -43,7 +43,7 @@ export default function TrackService({ applicationId = "123" }) {
   if (status === 'APPROVED' || status === 'REJECTED') currentStepIndex = 2;
 
   return (
-    <div className="max-w-xl p-8 bg-white rounded-xl shadow-sm border border-slate-100">
+    <div className="max-w-xl p-8 bg-slate-700 rounded-xl shadow-sm border border-slate-100">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Track Application</h1>
         <p className="text-sm text-slate-500 mt-1">ID: #{applicationId}</p>
@@ -81,7 +81,7 @@ export default function TrackService({ applicationId = "123" }) {
                 <p className={`font-semibold text-base transition-colors
                   ${isCurrent && status === 'REJECTED' ? 'text-red-600' : ''}
                   ${isCurrent && status !== 'REJECTED' ? 'text-blue-600' : ''}
-                  ${isCompleted ? 'text-slate-800' : 'text-slate-400'}
+                  ${isCompleted ? 'text-success-800' : 'text-green-400'}
                 `}>
                   {stepLabel}
                 </p>
