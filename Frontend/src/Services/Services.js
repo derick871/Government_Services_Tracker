@@ -40,4 +40,4 @@ export const getNoticesByCounty = (countyId) => {
   return api.get(
     `/notices/${countyId}/`
   );
-};
+}
