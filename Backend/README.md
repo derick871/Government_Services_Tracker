@@ -5,7 +5,7 @@ An enterprise-ready civic governance portal designed to solve public infrastruct
  ## The Citizen's Problem: "The Black Hole"
 The Issue: When citizens apply for local government services (like business permits, building approvals, or bursaries), they submit their paperwork and enter a "black hole." They have no idea who is handling their file, where it is stuck, or how long it will take.
 
- **Solution:** By generating an immutable tracking code (TRK-XXXXXXXX) instantly upon submission, citizens can input this token into a public search field (ApplicationDetailView) to see the transparent, real-time lifecycle status of their request without having to visit county offices physically.
+ **Solution:** By generating an immutable tracking code (TRK-**......**) instantly upon submission, citizens can input this token into a public search field (ApplicationDetailView) to see the transparent, real-time lifecycle status of their request without having to visit county offices physically.
 
  ## The Civil Servant's Problem: "Process Disorganization"
 The Issue: Without an enforced workflow pipeline, files get misplaced, actions are performed out of sequence (e.g., approving an application before it has been formally verified), and there is no audit log showing who authorized a particular change.
