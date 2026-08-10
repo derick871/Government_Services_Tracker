@@ -31,3 +31,7 @@ export const updateApplicationStatus = (
     }
   );
 };
+
+export const getNotices = () => {
+  return api.get("/notices/");
+};
