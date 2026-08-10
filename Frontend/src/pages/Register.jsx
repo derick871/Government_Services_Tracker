@@ -71,16 +71,16 @@ export default function Register() {
 
       <div className="w-full max-w-lg">
 
-        <div className="rounded-xl bg-white p-8 shadow-lg">
+        <div className="rounded-xl bg-slate-700 p-8 shadow-lg">
 
           {/* Header */}
           <div className="mb-8 text-center">
 
-            <h1 className="text-3xl font-bold text-slate-800">
+            <h1 className="text-3xl font-bold text-amber-500">
               Citizen Register
             </h1>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-white">
               Create your County Service Tracker account
             </p>
 
@@ -105,7 +105,7 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="firstName"
-                  className="mb-2 block text-sm font-medium text-slate-700"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   First Name
                 </label>
@@ -125,7 +125,7 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="lastName"
-                  className="mb-2 block text-sm font-medium text-slate-700"
+                  className="mb-2 block text-sm font-medium text-white"
                 >
                   Last Name
                 </label>
@@ -149,7 +149,7 @@ export default function Register() {
 
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-white"
               >
                 Email Address
               </label>
@@ -172,7 +172,7 @@ export default function Register() {
 
               <label
                 htmlFor="phoneNumber"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-white"
               >
                 Phone Number
               </label>
@@ -194,7 +194,7 @@ export default function Register() {
 
               <label
                 htmlFor="countyCode"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-white"
               >
                 County
               </label>
@@ -227,7 +227,7 @@ export default function Register() {
 
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-white"
               >
                 Password
               </label>
@@ -251,7 +251,7 @@ export default function Register() {
 
               <label
                 htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-white"
               >
                 Confirm Password
               </label>
@@ -286,7 +286,7 @@ export default function Register() {
           {/* Login link */}
           <div className="mt-6 text-center">
 
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-white">
               Already have an account?{" "}
 
               <button
