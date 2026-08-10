@@ -1,26 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  getApplicationByTrackingNumber,
-} from "../services/services";
+import { getApplicationByTrackingNumber } from "../Services/services";
 
 const WORKFLOW_STEPS = [
-  {
-    id: "SUBMITTED",
-    label: "Submitted",
-  },
-  {
-    id: "UNDER_REVIEW",
-    label: "Under Review",
-  },
-  {
-    id: "FINALIZED",
-    label: "Finalized",
-  },
+  { id: "SUBMITTED", label: "Submitted" },
+  { id: "UNDER_REVIEW", label: "Under Review" },
+  { id: "FINALIZED", label: "Finalized" },
 ];
 
-export default function TrackService({
-  trackingNumber,
-}) {
+export default function TrackService({ trackingNumber }) {
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -37,21 +24,12 @@ export default function TrackService({
         setLoading(true);
         setError("");
 
-        const data =
-          await getApplicationByTrackingNumber(
-            trackingNumber
-          );
-
+        const data = await getApplicationByTrackingNumber(trackingNumber);
         setApplication(data);
       } catch (err) {
-        console.error(
-          "Tracking request failed:",
-          err
-        );
-
+        console.error("Tracking request failed:", err);
         setError(
-          err.message ||
-            "Unable to load application tracking data."
+          err.message || "Unable to load application tracking data."
         );
       } finally {
         setLoading(false);
@@ -59,15 +37,13 @@ export default function TrackService({
     };
 
     loadApplication();
-  }, [trackingNumber]);
+  }, [trackingNumber]); // Stray '}' removed from here
 
   // Loading state
   if (loading) {
     return (
       <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="text-slate-600">
-          Loading tracking information...
-        </p>
+        <p className="text-slate-600">Loading tracking information...</p>
       </div>
     );
   }
@@ -79,10 +55,7 @@ export default function TrackService({
         <h2 className="font-semibold text-red-700">
           Unable to load application
         </h2>
-
-        <p className="mt-2 text-sm text-red-600">
-          {error}
-        </p>
+        <p className="mt-2 text-sm text-red-600">{error}</p>
       </div>
     );
   }
@@ -91,9 +64,7 @@ export default function TrackService({
   if (!application) {
     return (
       <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="text-slate-600">
-          No application found.
-        </p>
+        <p className="text-slate-600">No application found.</p>
       </div>
     );
   }
@@ -133,16 +104,8 @@ export default function TrackService({
 
       {/* Application details */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <InfoCard
-          title="County"
-          value={application.county_id}
-        />
-
-        <InfoCard
-          title="Service"
-          value={application.service_type}
-        />
-
+        <InfoCard title="County" value={application.county_id} />
+        <InfoCard title="Service" value={application.service_type} />
         <InfoCard
           title="Current Status"
           value={status.replaceAll("_", " ")}
@@ -156,116 +119,89 @@ export default function TrackService({
         </h2>
 
         <div className="relative ml-4 space-y-8 border-l-2 border-slate-200 pl-6">
-          {WORKFLOW_STEPS.map(
-            (step, index) => {
-              const isCompleted =
-                index < currentStepIndex;
+          {WORKFLOW_STEPS.map((step, index) => {
+            const isCompleted = index < currentStepIndex;
+            const isCurrent = index === currentStepIndex;
 
-              const isCurrent =
-                index === currentStepIndex;
+            let label = step.label;
 
-              let label = step.label;
+            if (step.id === "FINALIZED" && status === "APPROVED") {
+              label = "Approved";
+            }
 
-              if (
-                step.id === "FINALIZED" &&
-                status === "APPROVED"
-              ) {
-                label = "Approved";
-              }
+            if (step.id === "FINALIZED" && status === "REJECTED") {
+              label = "Rejected";
+            }
 
-              if (
-                step.id === "FINALIZED" &&
-                status === "REJECTED"
-              ) {
-                label = "Rejected";
-              }
-
-              return (
+            return (
+              <div
+                key={step.id}
+                className="relative flex items-center"
+              >
+                {/* Timeline node */}
                 <div
-                  key={step.id}
-                  className="relative flex items-center"
+                  className={`
+                    absolute -left-[39px]
+                    flex h-7 w-7 items-center
+                    justify-center rounded-full
+                    text-xs font-bold
+                    transition-all
+                    ${isCompleted ? "bg-green-600 text-white" : ""}
+                    ${
+                      isCurrent && status === "REJECTED"
+                        ? "bg-red-600 text-white ring-4 ring-red-100"
+                        : ""
+                    }
+                    ${
+                      isCurrent && status !== "REJECTED"
+                        ? "bg-blue-600 text-white ring-4 ring-blue-100"
+                        : ""
+                    }
+                    ${
+                      !isCompleted && !isCurrent
+                        ? "bg-slate-200 text-slate-500"
+                        : ""
+                    }
+                  `}
                 >
-                  {/* Timeline node */}
-                  <div
+                  {isCompleted ? "✓" : index + 1}
+                </div>
+
+                {/* Step text */}
+                <div>
+                  <p
                     className={`
-                      absolute -left-[39px]
-                      flex h-7 w-7 items-center
-                      justify-center rounded-full
-                      text-xs font-bold
-                      transition-all
+                      font-semibold
                       ${
-                        isCompleted
-                          ? "bg-green-600 text-white"
+                        isCurrent && status === "REJECTED"
+                          ? "text-red-600"
                           : ""
                       }
                       ${
-                        isCurrent &&
-                        status === "REJECTED"
-                          ? "bg-red-600 text-white ring-4 ring-red-100"
+                        isCurrent && status !== "REJECTED"
+                          ? "text-blue-600"
                           : ""
                       }
+                      ${isCompleted ? "text-green-700" : ""}
                       ${
-                        isCurrent &&
-                        status !== "REJECTED"
-                          ? "bg-blue-600 text-white ring-4 ring-blue-100"
-                          : ""
-                      }
-                      ${
-                        !isCompleted &&
-                        !isCurrent
-                          ? "bg-slate-200 text-slate-500"
+                        !isCompleted && !isCurrent
+                          ? "text-slate-400"
                           : ""
                       }
                     `}
                   >
-                    {isCompleted
-                      ? "✓"
-                      : index + 1}
-                  </div>
+                    {label}
+                  </p>
 
-                  {/* Step text */}
-                  <div>
-                    <p
-                      className={`
-                        font-semibold
-                        ${
-                          isCurrent &&
-                          status === "REJECTED"
-                            ? "text-red-600"
-                            : ""
-                        }
-                        ${
-                          isCurrent &&
-                          status !== "REJECTED"
-                            ? "text-blue-600"
-                            : ""
-                        }
-                        ${
-                          isCompleted
-                            ? "text-green-700"
-                            : ""
-                        }
-                        ${
-                          !isCompleted &&
-                          !isCurrent
-                            ? "text-slate-400"
-                            : ""
-                        }
-                      `}
-                    >
-                      {label}
+                  {isCurrent && (
+                    <p className="mt-1 text-sm text-slate-500">
+                      Current application status
                     </p>
-
-                    {isCurrent && (
-                      <p className="mt-1 text-sm text-slate-500">
-                        Current application status
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
-              );
-            }
-          )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -283,8 +219,7 @@ export default function TrackService({
                 className="rounded-lg border border-slate-200 p-4"
               >
                 <p className="font-medium text-slate-800">
-                  {log.from_state} →{" "}
-                  {log.to_state}
+                  {log.from_state} → {log.to_state}
                 </p>
 
                 {log.comment && (
@@ -294,9 +229,7 @@ export default function TrackService({
                 )}
 
                 <p className="mt-2 text-xs text-slate-400">
-                  {new Date(
-                    log.timestamp
-                  ).toLocaleString()}
+                  {new Date(log.timestamp).toLocaleString()}
                 </p>
               </div>
             ))}
@@ -305,15 +238,12 @@ export default function TrackService({
       )}
     </div>
   );
-}
+} // <-- Correct closing bracket for TrackService function
 
 function InfoCard({ title, value }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm text-slate-500">
-        {title}
-      </p>
-
+      <p className="text-sm text-slate-500">{title}</p>
       <p className="mt-1 font-semibold text-slate-800">
         {value || "N/A"}
       </p>
