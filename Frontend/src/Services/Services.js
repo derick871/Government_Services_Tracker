@@ -12,6 +12,14 @@ export const getApplication = (trackingNumber) => {
   );
 };
 
+export const getApplicationByTrackingNumber = (
+  trackingNumber
+) => {
+  return client.get(
+    `/applications/${trackingNumber}/`
+  );
+};
+
 // Create application
 export const createApplication = (data) => {
   return api.post("/applications/", data);
