@@ -71,16 +71,16 @@ export default function Login() {
       <div className="w-full max-w-md">
 
         {/* Card */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        <div className="bg-slate-700 rounded-xl shadow-lg p-8">
 
           {/* Header */}
           <div className="text-center mb-8">
 
-            <h1 className="text-3xl font-bold text-slate-800">
+            <h1 className="text-3xl font-bold text-amber-500">
               Citizen Login
             </h1>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-white">
               Sign in to access your county services
             </p>
 
@@ -104,7 +104,7 @@ export default function Login() {
 
               <label
                 htmlFor="email"
-                className="block mb-2 text-sm font-medium text-slate-700"
+                className="block mb-2 text-sm font-medium text-white"
               >
                 Email Address
               </label>
@@ -127,7 +127,7 @@ export default function Login() {
 
               <label
                 htmlFor="password"
-                className="block mb-2 text-sm font-medium text-slate-700"
+                className="block mb-2 text-sm font-medium text-white"
               >
                 Password
               </label>
@@ -161,7 +161,7 @@ export default function Login() {
           {/* Register */}
           <div className="mt-6 text-center">
 
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-white">
               Don't have an account?{" "}
 
               <button
