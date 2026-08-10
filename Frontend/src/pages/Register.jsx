@@ -218,6 +218,21 @@ export default function Register() {
                 <option value="KE-COUNTY-037">
                   Kakamega
                 </option>
+                <option value="KE-COUNTY-037">
+                  Mandera
+                </option>
+                <option value="KE-COUNTY-037">
+                  Kilifi
+                </option>
+                <option value="KE-COUNTY-037">
+                  Busia
+                </option>
+                <option value="KE-COUNTY-037">
+                  Kajiado
+                </option>
+                <option value="KE-COUNTY-037">
+                  Mombasa
+                </option>
               </select>
 
             </div>
