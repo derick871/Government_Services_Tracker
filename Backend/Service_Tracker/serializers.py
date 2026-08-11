@@ -2,12 +2,8 @@ from uuid import uuid4
 
 from rest_framework import serializers
 
-from .models import (
-    CountyNotice,
-    Application,
-    StatusLog,
-)
 from .FSM_transitions import get_allowed_next_states
+from .models import Application, CountyNotice, StatusLog
 
 
 # ======================
@@ -66,31 +62,19 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
 
     def validate_county_id(self, value):
         """Validate county code."""
-
         if not value.strip():
-            raise serializers.ValidationError(
-                "County ID is required."
-            )
-
+            raise serializers.ValidationError("County ID is required.")
         return value.upper()
 
     def validate_payload_data(self, value):
         """Ensure payload is a JSON object."""
-
         if not isinstance(value, dict):
-            raise serializers.ValidationError(
-                "Payload must be a JSON object."
-            )
-
+            raise serializers.ValidationError("Payload must be a JSON object.")
         return value
 
     def create(self, validated_data):
-        """Create application."""
-
-        validated_data["tracking_number"] = (
-            f"TRK-{uuid4().hex[:8].upper()}"
-        )
-
+        """Create application with unique tracking number."""
+        validated_data["tracking_number"] = f"TRK-{uuid4().hex[:8].upper()}"
         return Application.objects.create(**validated_data)
 
 
@@ -122,12 +106,10 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
     """Detailed application view."""
 
     citizen = serializers.StringRelatedField()
-
     logs = StatusLogSerializer(
         many=True,
         read_only=True,
     )
-
     allowed_actions = serializers.SerializerMethodField()
 
     class Meta:
@@ -148,7 +130,6 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
 
     def get_allowed_actions(self, obj):
         """Return valid next states."""
-
         return get_allowed_next_states(obj.status)
 
 
@@ -157,13 +138,11 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
 # ======================
 
 class ApplicationStatusSerializer(serializers.Serializer):
-    """Validate workflow updates."""
+    """Validate workflow status updates."""
 
-    status = serializers.ChoiceField(
-        choices=Application.STATUS_CHOICES
-    )
-
+    status = serializers.ChoiceField(choices=Application.Status.choices)
     comment = serializers.CharField(
         required=False,
         allow_blank=True,
+        default="",
     )
