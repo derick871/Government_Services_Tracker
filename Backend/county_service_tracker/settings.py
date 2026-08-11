@@ -48,7 +48,8 @@ INSTALLED_APPS = [
 
 # Unified Identity Blueprint Router mapping custom RBAC User profiles
 AUTH_USER_MODEL = 'Service_Tracker.User'
-
+AUTH_USER_MODEL = 'authentication.user'
+ 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be placed at the top to intercept React requests
     'django.middleware.security.SecurityMiddleware',
