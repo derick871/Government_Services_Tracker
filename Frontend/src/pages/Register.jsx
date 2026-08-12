@@ -189,28 +189,7 @@ export default function Register() {
               />
 
             </div>
-            {/* id */}
-            <div>
-
-              <label
-                htmlFor="id"
-                className="mb-2 block text-sm font-medium text-white"
-              >
-                Id
-              </label>
-
-              <input
-                id="id"
-                name="id"
-                type="number"
-                placeholder="87452693"
-                value={form.id}
-                onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-
-            </div>
-
+            
             {/* County */}
             <div>
 
@@ -233,26 +212,26 @@ export default function Register() {
                   Select your county
                 </option>
 
-                <option value="KE-COUNTY-047">
+                <option value="KE-COUNTY-001">
                   Nairobi
                 </option>
 
                 <option value="KE-COUNTY-037">
                   Kakamega
                 </option>
-                <option value="KE-COUNTY-037">
+                <option value="KE-COUNTY-027">
                   Mandera
                 </option>
-                <option value="KE-COUNTY-037">
+                <option value="KE-COUNTY-034">
                   Kilifi
                 </option>
-                <option value="KE-COUNTY-037">
+                <option value="KE-COUNTY-032">
                   Busia
                 </option>
                 <option value="KE-COUNTY-037">
                   Kajiado
                 </option>
-                <option value="KE-COUNTY-037">
+                <option value="KE-COUNTY-002">
                   Mombasa
                 </option>
               </select>
