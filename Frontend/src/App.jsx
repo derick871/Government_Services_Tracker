@@ -6,6 +6,9 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminConsole from "./pages/AdminConsole";
 import TrackService from "./pages/TrackService"
+import ServiceTracker from "./components/ServiceTracker"; 
+import MetricCard from "./components/dashboard/MetricCard";
+import EfficiencyTable from "./components/dashboard/EfficiencyTable";
 
 export default function App() {
   
@@ -18,6 +21,11 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/adminconsole" element={<AdminConsole />} />
         <Route path="/trackservice" element={<TrackService />} />
+        <Route path="/servicetracker" element={<ServiceTracker/>} />
+        <Route path="/metriccard" element={<MetricCard/>} />
+        <Route path="/efficiencytable" element={<EfficiencyTable/>} />
+
+
       </Routes>
     </BrowserRouter>
   );
