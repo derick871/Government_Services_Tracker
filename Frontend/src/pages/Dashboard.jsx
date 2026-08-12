@@ -62,7 +62,7 @@ export default function Dashboard() {
   // Loading state
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6">
+      <main className="min-h-screen bg-slate-700 p-6">
         <div className="mx-auto max-w-7xl">
           <p className="text-slate-600">
             Loading dashboard...
@@ -75,7 +75,7 @@ export default function Dashboard() {
   // Error state
   if (error) {
     return (
-      <main className="min-h-screen bg-slate-100 p-6">
+      <main className="min-h-screen bg-slate-700 p-6">
         <div className="mx-auto max-w-7xl">
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
             {error}
@@ -91,12 +91,12 @@ export default function Dashboard() {
       <div className="mx-auto max-w-7xl space-y-8">
 
         {/* Welcome banner */}
-        <section className="rounded-xl bg-white p-6 shadow-sm">
-          <h1 className="text-3xl font-bold text-slate-900">
+        <section className="rounded-xl bg-slate-700 p-6 shadow-sm">
+          <h1 className="text-3xl font-bold text-amber-900">
             Citizen Dashboard
           </h1>
 
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-white">
             Welcome back to your County Portal.
             Manage your services cleanly online.
           </p>
@@ -104,17 +104,17 @@ export default function Dashboard() {
 
         {/* Metrics */}
         <section>
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-slate-900">
+          <div className="mb-4 bg-slate-700">
+            <h2 className="text-xl font-bold text-amber-700">
               Application Statistics
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-white">
               Overview of your submitted county services.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 text-amber-500 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
             <MetricCard
               title="Submitted"
@@ -144,16 +144,16 @@ export default function Dashboard() {
         </section>
 
         {/* Application list */}
-        <section className="rounded-xl bg-white p-6 shadow-sm">
+        <section className="rounded-xl bg-slate-900 p-6 shadow-sm">
 
           <div className="mb-5">
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-bold text-amber-700">
               Recent Applications
             </h2>
           </div>
 
           {applications.length === 0 ? (
-            <p className="text-slate-500">
+            <p className="text-white">
               You have no applications yet.
             </p>
           ) : (
@@ -161,7 +161,7 @@ export default function Dashboard() {
 
               <table className="w-full text-left text-sm">
 
-                <thead className="border-b bg-slate-50">
+                <thead className="border-b text-amber-500 bg-slate-900">
                   <tr>
                     <th className="p-4">
                       Tracking Number
