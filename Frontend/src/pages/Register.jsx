@@ -7,6 +7,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
+    id: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -181,8 +182,29 @@ export default function Register() {
                 id="phoneNumber"
                 name="phoneNumber"
                 type="tel"
-                placeholder="0712345678"
+                placeholder="+254*******"
                 value={form.phoneNumber}
+                onChange={handleChange}
+                className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+
+            </div>
+            {/* id */}
+            <div>
+
+              <label
+                htmlFor="id"
+                className="mb-2 block text-sm font-medium text-white"
+              >
+                Id
+              </label>
+
+              <input
+                id="id"
+                name="id"
+                type="number"
+                placeholder="87452693"
+                value={form.id}
                 onChange={handleChange}
                 className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
