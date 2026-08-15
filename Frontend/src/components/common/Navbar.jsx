@@ -48,3 +48,16 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
           />
         </div>
       </form>
+       {/*  Actions, Role Badge & User Context */}
+      <div className="flex items-center gap-3">
+        {/* Role Badge */}
+        <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+          user?.role === 'OFFICER' 
+            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+        }`}>
+          <Shield size={12} />
+          {user?.role || 'CITIZEN'}
+        </span>
+
+      </div>
