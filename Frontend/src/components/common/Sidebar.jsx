@@ -19,13 +19,13 @@ export default function Sidebar({ isOpen, activeRoute, setActiveRoute, userRole 
 
   return(
     <div 
-      className={`fixed lg:static top-16 left-0 z-20 h-[calc(100vh-4rem)] bg-slate-900 border-r border-slate-800 text-slate-300 transition-all duration-300 flex flex-col justify-between ${
+      className={`fixed lg:static top-16 left-0 z-20 h-[calc(100vh-4rem)] bg-slate-700 border-r border-slate-400 text-slate-300 transition-all duration-300 flex flex-col justify-between ${
         isOpen ? 'w-64' : 'w-0 lg:w-20 overflow-hidden'
       }`}
     >
       {/* Navigation Group */}
       <div className="p-3 space-y-1">
-        <p className={`text-[10px] uppercase font-mono tracking-wider text-slate-500 px-3 py-2 ${!isOpen && 'lg:hidden'}`}>
+        <p className={`text-[10px] uppercase font-bold tracking-wider text-amber-700 px-3 py-2 ${!isOpen && 'lg:hidden'}`}>
           Main Navigation
         </p>
 
@@ -40,10 +40,10 @@ export default function Sidebar({ isOpen, activeRoute, setActiveRoute, userRole 
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive 
                   ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30' 
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                  : 'text-white hover:text-amber-100 hover:bg-slate-500'
               }`}
             >
-              <Icon size={18} className={isActive ? 'text-indigo-400' : 'text-slate-400'} />
+              <Icon size={18} className={isActive ? 'text-amber-400' : 'text-amber-400'} />
               <span className={`truncate ${!isOpen && 'lg:hidden'}`}>{item.label}</span>
               {isActive && isOpen && <ChevronRight size={14} className="ml-auto text-indigo-400" />}
             </button>
@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, activeRoute, setActiveRoute, userRole 
       {/* Bottom Help / Support Block */}
       <div className="p-3 border-t border-slate-800">
         <button 
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:text-amber-100 hover:bg-slate-800 transition-colors"
         >
           <HelpCircle size={18} />
           <span className={`${!isOpen && 'lg:hidden'}`}>Help & Documentation</span>
