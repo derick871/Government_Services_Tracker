@@ -65,6 +65,37 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
           <Bell size={18} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-amber-900" />
         </button>
+        {/* User Profile Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-2 p-1.5 rounded-lg border border-slate-400 hover:bg-amber-800 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-md bg-slate-600 flex items-center justify-center font-bold text-xs text-white">
+              {user?.email?.charAt(0).toUpperCase() || 'D'}
+            </div>
+          </button>
 
-
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-800 shadow-xl py-2 z-50 text-white text-sm">
+              <div className="px-4 py-2 border-b border-slate-800">
+                <p className="font-medium text-white truncate">{user?.email || 'user@county.go.ke'}</p>
+                <p className="text-xs text-white font-mono">County: {user?.county_code || 'Nairobi'}</p>
+              </div>
+              <a href="#profile" className="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 transition-colors">
+                <User size={16} /> Profile & Settings
+              </a>
+              <button 
+                onClick={() => console.log('Logout executed')}
+                className="w-full flex items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors text-left"
+              >
+                <LogOut size={16} /> Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+    </header>
+
+
+      
