@@ -60,4 +60,11 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
           {user?.role || 'CITIZEN'}
         </span>
 
+          {/* Notifications Icon */}
+        <button className="relative p-2 rounded-lg text-amber-400 hover:text-amber-100 hover:bg-slate-400 transition-colors">
+          <Bell size={18} />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-amber-900" />
+        </button>
+
+
       </div>
