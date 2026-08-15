@@ -14,7 +14,7 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
     }
   };
 
-  return 
+  return(
     <header className="sticky top-0 z-30 h-16 bg-slate-700 border-b border-slate-400 text-white px-4 md:px-6 flex items-center justify-between shadow-sm">
       {/* Left: Brand & Mobile Menu Trigger */}
       <div className="flex items-center gap-3">
@@ -96,7 +96,6 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
           )}
         </div>
       </div>
-    </header>
-
-
-      
+    </header> 
+  );
+}
