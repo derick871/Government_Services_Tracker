@@ -25,6 +25,7 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
+      </div>
 
         <div className="flex items-center gap-2">
           <div className="bg-slate-600 p-2 rounded-lg text-white font-bold">
