@@ -92,7 +92,7 @@ export default function Dashboard() {
 
         {/* Welcome banner */}
         <section className="rounded-xl bg-slate-700 p-6 shadow-sm">
-          <h1 className="text-3xl font-bold text-amber-900">
+          <h1 className="text-3xl font-bold text-amber-500">
             Citizen Dashboard
           </h1>
 
