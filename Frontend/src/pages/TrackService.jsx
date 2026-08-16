@@ -7,14 +7,32 @@ const WORKFLOW_STEPS = [
   { id: "FINALIZED", label: "Finalized" },
 ];
 
-export default function TrackService({ trackingNumber }) {
+export default function TrackService({ trackingNumber: propTrackingNumber }) {
   const [application, setApplication] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /*
+   * Accept tracking number from:
+   
+   */
+  const getTrackingNumber = () => {
+    if (propTrackingNumber?.trim()) {
+      return propTrackingNumber.trim().toUpperCase();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const urlTrackingNumber = params.get("tracking");
+
+    return urlTrackingNumber?.trim().toUpperCase() || "";
+  };
+
   useEffect(() => {
+    const trackingNumber = getTrackingNumber();
+
     if (!trackingNumber) {
-      setError("Tracking number is required.");
+      setApplication(null);
+      setError("Please provide a valid tracking number.");
       setLoading(false);
       return;
     }
@@ -23,13 +41,25 @@ export default function TrackService({ trackingNumber }) {
       try {
         setLoading(true);
         setError("");
+        setApplication(null);
 
-        const data = await getApplicationByTrackingNumber(trackingNumber);
+        const data = await getApplicationByTrackingNumber(
+          trackingNumber
+        );
+
+        if (!data) {
+          throw new Error("Application was not found.");
+        }
+
         setApplication(data);
       } catch (err) {
         console.error("Tracking request failed:", err);
+
         setError(
-          err.message || "Unable to load application tracking data."
+          err?.response?.data?.detail ||
+            err?.response?.data?.message ||
+            err?.message ||
+            "Unable to load application tracking data."
         );
       } finally {
         setLoading(false);
@@ -37,41 +67,60 @@ export default function TrackService({ trackingNumber }) {
     };
 
     loadApplication();
-  }, [trackingNumber]); // Stray '}' removed from here
+  }, [propTrackingNumber]);
 
-  // Loading state
+  /* ---------------------------------
+     Loading
+  ---------------------------------- */
+
   if (loading) {
     return (
       <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="text-slate-600">Loading tracking information...</p>
+        <p className="animate-pulse text-slate-600">
+          Loading tracking information...
+        </p>
       </div>
     );
   }
 
-  // Error state
+  /* ---------------------------------
+     Error
+  ---------------------------------- */
+
   if (error) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6">
         <h2 className="font-semibold text-red-700">
           Unable to load application
         </h2>
-        <p className="mt-2 text-sm text-red-600">{error}</p>
+
+        <p className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
       </div>
     );
   }
 
-  // Empty state
+  /* ---------------------------------
+     Empty
+  ---------------------------------- */
+
   if (!application) {
     return (
       <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="text-slate-600">No application found.</p>
+        <p className="text-slate-600">
+          Enter a tracking number to view your application.
+        </p>
       </div>
     );
   }
 
-  const status = application.status;
+  const status = application.status || "SUBMITTED";
 
-  // Determine visual step
+  /* ---------------------------------
+     Determine workflow step
+  ---------------------------------- */
+
   let currentStepIndex = 0;
 
   if (status === "UNDER_REVIEW") {
@@ -81,7 +130,8 @@ export default function TrackService({ trackingNumber }) {
   if (
     status === "VERIFIED" ||
     status === "APPROVED" ||
-    status === "REJECTED"
+    status === "REJECTED" ||
+    status === "FINALIZED"
   ) {
     currentStepIndex = 2;
   }
@@ -97,15 +147,23 @@ export default function TrackService({ trackingNumber }) {
         <p className="mt-2 text-sm text-slate-500">
           Tracking Number:
           <span className="ml-2 font-semibold text-slate-700">
-            {application.tracking_number}
+            {application.tracking_number || "N/A"}
           </span>
         </p>
       </div>
 
       {/* Application details */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <InfoCard title="County" value={application.county_id} />
-        <InfoCard title="Service" value={application.service_type} />
+        <InfoCard
+          title="County"
+          value={application.county_id}
+        />
+
+        <InfoCard
+          title="Service"
+          value={application.service_type}
+        />
+
         <InfoCard
           title="Current Status"
           value={status.replaceAll("_", " ")}
@@ -122,14 +180,22 @@ export default function TrackService({ trackingNumber }) {
           {WORKFLOW_STEPS.map((step, index) => {
             const isCompleted = index < currentStepIndex;
             const isCurrent = index === currentStepIndex;
+            const isRejected =
+              isCurrent && status === "REJECTED";
 
             let label = step.label;
 
-            if (step.id === "FINALIZED" && status === "APPROVED") {
+            if (
+              step.id === "FINALIZED" &&
+              status === "APPROVED"
+            ) {
               label = "Approved";
             }
 
-            if (step.id === "FINALIZED" && status === "REJECTED") {
+            if (
+              step.id === "FINALIZED" &&
+              status === "REJECTED"
+            ) {
               label = "Rejected";
             }
 
@@ -142,21 +208,28 @@ export default function TrackService({ trackingNumber }) {
                 <div
                   className={`
                     absolute -left-[39px]
-                    flex h-7 w-7 items-center
-                    justify-center rounded-full
-                    text-xs font-bold
+                    flex h-7 w-7 items-center justify-center
+                    rounded-full text-xs font-bold
                     transition-all
-                    ${isCompleted ? "bg-green-600 text-white" : ""}
+
                     ${
-                      isCurrent && status === "REJECTED"
+                      isCompleted
+                        ? "bg-green-600 text-white"
+                        : ""
+                    }
+
+                    ${
+                      isRejected
                         ? "bg-red-600 text-white ring-4 ring-red-100"
                         : ""
                     }
+
                     ${
-                      isCurrent && status !== "REJECTED"
+                      isCurrent && !isRejected
                         ? "bg-blue-600 text-white ring-4 ring-blue-100"
                         : ""
                     }
+
                     ${
                       !isCompleted && !isCurrent
                         ? "bg-slate-200 text-slate-500"
@@ -167,22 +240,30 @@ export default function TrackService({ trackingNumber }) {
                   {isCompleted ? "✓" : index + 1}
                 </div>
 
-                {/* Step text */}
+                {/* Step information */}
                 <div>
                   <p
                     className={`
                       font-semibold
+
                       ${
-                        isCurrent && status === "REJECTED"
+                        isRejected
                           ? "text-red-600"
                           : ""
                       }
+
                       ${
-                        isCurrent && status !== "REJECTED"
+                        isCurrent && !isRejected
                           ? "text-blue-600"
                           : ""
                       }
-                      ${isCompleted ? "text-green-700" : ""}
+
+                      ${
+                        isCompleted
+                          ? "text-green-700"
+                          : ""
+                      }
+
                       ${
                         !isCompleted && !isCurrent
                           ? "text-slate-400"
@@ -205,7 +286,7 @@ export default function TrackService({ trackingNumber }) {
         </div>
       </div>
 
-      {/* Status logs */}
+      {/* Status history */}
       {application.logs?.length > 0 && (
         <div className="mt-10">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">
@@ -219,7 +300,8 @@ export default function TrackService({ trackingNumber }) {
                 className="rounded-lg border border-slate-200 p-4"
               >
                 <p className="font-medium text-slate-800">
-                  {log.from_state} → {log.to_state}
+                  {log.from_state || "Created"} →{" "}
+                  {log.to_state}
                 </p>
 
                 {log.comment && (
@@ -228,9 +310,13 @@ export default function TrackService({ trackingNumber }) {
                   </p>
                 )}
 
-                <p className="mt-2 text-xs text-slate-400">
-                  {new Date(log.timestamp).toLocaleString()}
-                </p>
+                {log.timestamp && (
+                  <p className="mt-2 text-xs text-slate-400">
+                    {new Date(
+                      log.timestamp
+                    ).toLocaleString()}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -238,12 +324,19 @@ export default function TrackService({ trackingNumber }) {
       )}
     </div>
   );
-} // <-- Correct closing bracket for TrackService function
+}
+
+/* ---------------------------------
+   Reusable information card
+---------------------------------- */
 
 function InfoCard({ title, value }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm text-slate-500">{title}</p>
+      <p className="text-sm text-slate-500">
+        {title}
+      </p>
+
       <p className="mt-1 font-semibold text-slate-800">
         {value || "N/A"}
       </p>
