@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Layout from "./components/common/Layout"
 import Home from "./pages/Home";
 import Register from  "./pages/Register";
 import Login from "./pages/Login";
@@ -15,6 +16,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/*public pages - no layout */}
+        <Route element={<Layout />} />
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -32,7 +35,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      {/* 2. Place it here like a custom HTML tag */}
       <ServiceTracker /> 
     </div>
   );
