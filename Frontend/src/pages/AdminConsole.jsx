@@ -42,20 +42,20 @@ export default function AdminConsole() {
         </div>
       </div>
 
-      <div className="shadow border border-slate-200 rounded-lg overflow-hidden bg-white">
+      <div className="shadow border border-slate-200 rounded-lg overflow-hidden bg-slate-700">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-slate-100 border-b border-slate-200">
             <tr>
-              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Reference</th>
-              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Applicant Name</th>
-              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">Action</th>
+              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-amber-500">Reference</th>
+              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-amber-500">Applicant Name</th>
+              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-amber-500">Status</th>
+              <th className="p-4 text-xs font-semibold uppercase tracking-wider text-amber-500 text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
             {applications.length === 0 ? (
               <tr>
-                <td colSpan="4" className="p-8 text-center text-slate-500">
+                <td colSpan="4" className="p-8 text-center text-white">
                   No applications pending review.
                 </td>
               </tr>
