@@ -61,9 +61,9 @@ export default function AdminConsole() {
               </tr>
             ) : (
               applications.map((app) => (
-                <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-4 text-sm font-medium text-slate-900">{app.reference || app.id}</td>
-                  <td className="p-4 text-sm text-slate-600">{app.applicantName}</td>
+                <tr key={app.id} className="hover:bg-slate-400 transition-colors">
+                  <td className="p-4 text-sm font-medium text-white">{app.reference || app.id}</td>
+                  <td className="p-4 text-sm text-white">{app.applicantName}</td>
                   <td className="p-4 text-sm">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                       ${app.status === 'Pending' || app.status === 'UNDER_REVIEW' ? 'bg-amber-100 text-amber-800' : ''}
