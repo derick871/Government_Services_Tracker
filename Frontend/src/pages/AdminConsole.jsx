@@ -1,26 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
+
+const API_URL = "http://127.0.0.1:8000/api/applications/";
 
 export default function AdminConsole() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
-  // Fetch unreviewed or all applications from the backend
   useEffect(() => {
-    fetch('/api/admin/applications')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch admin dashboard records.');
-        return res.json();
-      })
-      .then((data) => {
-        setApplications(data); 
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+    const fetchApplications = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token = localStorage.getItem("access");
+
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && {
+              Authorization: `Bearer ${token}`,
+            }),
+          },
+        });
+
+        const contentType = response.headers.get("content-type");
+
+        if (!response.ok) {
+          let message = `Request failed with status ${response.status}`;
+
+          if (contentType?.includes("application/json")) {
+            const data = await response.json();
+            message = data.detail || data.message || message;
+          } else {
+            const text = await response.text();
+            console.error("Server returned:", text.substring(0, 300));
+          }
+
+          throw new Error(message);
+        }
+
+        if (!contentType?.includes("application/json")) {
+          const text = await response.text();
+
+          console.error("Expected JSON but received:", text.substring(0, 300));
+
+          throw new Error(
+            "The server returned HTML instead of JSON. Check the API URL and Django routes."
+          );
+        }
+
+        const data = await response.json();
+
 
   // Action Handler: What happens when an admin hits "Review"
   const handleReview = (id) => {
