@@ -54,14 +54,87 @@ export default function AdminConsole() {
         const data = await response.json();
 
 
-  // Action Handler: What happens when an admin hits "Review"
-  const handleReview = (id) => {
-    console.log(`Navigating to review portal or opening workflow  for application: ${id}`);
+  const records = Array.isArray(data)
+          ? data
+          : Array.isArray(data.results)
+          ? data.results
+          : [];
+
+        setApplications(records);
+      } catch (err) {
+        console.error("Admin applications error:", err);
+        setError(err.message || "Failed to load applications.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
+  const handleReview = (application) => {
+    console.log(
+      "Reviewing application:",
+      application.tracking_number || application.id
+    );
+
+    // Add navigation here later
+    // navigate(`/admin/applications/${application.id}`);
   };
 
-  // Defensive Loading & Error States
-  if (loading) return <div className="p-8 text-slate-600 animate-pulse font-medium">Loading admin console records...</div>;
-  if (error) return <div className="p-8 text-red-600 font-semibold">Error: {error}</div>;
+  const getStatusStyle = (status) => {
+    switch (status?.toUpperCase()) {
+      case "PENDING":
+      case "SUBMITTED":
+      case "UNDER_REVIEW":
+        return "bg-amber-100 text-amber-800";
+
+      case "APPROVED":
+      case "VERIFIED":
+      case "FINALIZED":
+        return "bg-green-100 text-green-800";
+
+      case "REJECTED":
+        return "bg-red-100 text-red-800";
+
+      case "ACTION_REQUIRED":
+        return "bg-blue-100 text-blue-800";
+
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 text-slate-600 animate-pulse font-medium">
+        Loading admin console records...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-5">
+          <h2 className="font-semibold text-red-700">
+            Unable to load applications
+          </h2>
+
+          <p className="mt-2 text-sm text-red-600">
+            {error}
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
