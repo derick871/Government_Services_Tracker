@@ -19,7 +19,7 @@ export default function Sidebar({ isOpen, activeRoute, setActiveRoute, userRole 
 
   return(
     <div 
-      className={`fixed lg:static top-16 left-0 z-20 h-[calc(100vh-4rem)] bg-slate-700 border-r border-slate-400 text-slate-300 transition-all duration-300 flex flex-col justify-between ${
+      className={`fixed lg:static top-16 left-0 z-20 h-[calc(100vh-4rem)] bg-slate-700 border-r border-slate-400 text-white transition-all duration-300 flex flex-col justify-between ${
         isOpen ? 'w-64' : 'w-0 lg:w-20 overflow-hidden'
       }`}
     >
@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, activeRoute, setActiveRoute, userRole 
             <button
               key={item.id}
               onClick={() => setActiveRoute(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`w-half flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive 
                   ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30' 
                   : 'text-white hover:text-amber-100 hover:bg-slate-500'
@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, activeRoute, setActiveRoute, userRole 
       {/* Bottom Help / Support Block */}
       <div className="p-3 border-t border-slate-800">
         <button 
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:text-amber-100 hover:bg-slate-800 transition-colors"
+          className="w-half flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white hover:text-amber-100 hover:bg-slate-800 transition-colors"
         >
           <HelpCircle size={18} />
           <span className={`${!isOpen && 'lg:hidden'}`}>Help & Documentation</span>
