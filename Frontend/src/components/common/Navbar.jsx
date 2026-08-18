@@ -33,7 +33,7 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
           </div>
           <div className="hidden sm:block">
             <h1 className="text-sm font-semibold tracking-wide text-amber-500">County Service Portal</h1>
-            <p className="text-[10px] text-white uppercase tracking-wider font-mono">Civic Tracker Engine</p>
+            <p className="text-[10px] text-white uppercase tracking-wider font-semi-bolb">Civic Tracker Engine</p>
           </div>
         </div>
          {/* Center: Global Quick Tracking Input */}
@@ -44,7 +44,7 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Track status (e.g. TRK-A1B2C3D4)..."
+            placeholder="Track status (e.g. TRK-B12CKP5)..."
             className="w-full bg-slate-700 border border-grey-200 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semi-bold transition-all"
           />
         </div>
@@ -70,16 +70,16 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2 p-1.5 rounded-lg border border-slate-400 hover:bg-amber-800 transition-colors"
+            className="flex items-center gap-2 p-2 rounded-lg border border-slate-400 hover:bg-amber-800 transition-colors"
           >
-            <div className="w-7 h-7 rounded-md bg-slate-600 flex items-center justify-center font-bold text-xs text-white">
+            <div className="w-7 h-7 rounded-md bg-slate-700 flex items-center justify-center font-bold text-xs text-white">
               {user?.email?.charAt(0).toUpperCase() || 'D'}
             </div>
           </button>
 
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-800 shadow-xl py-2 z-50 text-white text-sm">
-              <div className="px-4 py-2 border-b border-slate-800">
+              <div className="px-4 py-2 border-b border-slate-400">
                 <p className="font-medium text-white truncate">{user?.email || 'user@county.go.ke'}</p>
                 <p className="text-xs text-white font-mono">County: {user?.county_code || 'Nairobi'}</p>
               </div>
