@@ -1,17 +1,8 @@
 export default function MetricCard({
   title,
   value,
-  change,
-  changeType= 'neutral',
-  icon: Icon,
-  suffix= ""
-}) {
-  const changeColors= {
-    increase: 'text-green-500',
-    decrease: 'text-red-500',
-    neutral: 'text-amber-500'
-  }
-}
+ 
+}) 
 {
   return (
     <div className="rounded-lg bg-white p-5 shadow-sm">
