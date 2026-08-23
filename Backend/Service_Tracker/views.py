@@ -23,7 +23,7 @@ from .permissions import (
 )
 
 from.authentications import LoginSerializer,LoginView
-from .FSM_transitions import validate_transition, InvalidStateTransition
+from .Transitions import validate_transition, InvalidStateTransition
 
 
 # ======================

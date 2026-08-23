@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from rest_framework import serializers
 
-from .FSM_transitions import get_allowed_next_states
+from .Transitions import get_allowed_next_states
 from .models import Application, CountyNotice, StatusLog
 
 
