@@ -30,6 +30,16 @@ const STATUS_STYLES = {
     className: "bg-green-50 text-green-700 ring-green-100",
   },
 };
+function getStatus(status) {
+  const normalizedStatus = status?.toUpperCase();
+
+  return (
+    STATUS_STYLES[normalizedStatus] || {
+      label: status || "Unknown",
+      className: "bg-slate-50 text-slate-600 ring-slate-100",
+    }
+  );
+}
 
 export default function ApplicationCard({
   application,
