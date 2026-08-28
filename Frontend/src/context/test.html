@@ -1,0 +1,1782 @@
+application card
+ import { Link } from "react-router-dom";
+
+const STATUS_STYLES = {
+  SUBMITTED: {
+    label: "Submitted",
+    className: "bg-blue-50 text-blue-700 ring-blue-100",
+  },
+  UNDER_REVIEW: {
+    label: "Under Review",
+    className: "bg-amber-50 text-amber-700 ring-amber-100",
+  },
+  ACTION_REQUIRED: {
+    label: "Action Required",
+    className: "bg-orange-50 text-orange-700 ring-orange-100",
+  },
+  VERIFIED: {
+    label: "Verified",
+    className: "bg-purple-50 text-purple-700 ring-purple-100",
+  },
+  APPROVED: {
+    label: "Approved",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  },
+  REJECTED: {
+    label: "Rejected",
+    className: "bg-red-50 text-red-700 ring-red-100",
+  },
+  FINALIZED: {
+    label: "Finalized",
+    className: "bg-green-50 text-green-700 ring-green-100",
+  },
+};
+
+function getStatus(status) {
+  const normalizedStatus = status?.toUpperCase();
+
+  return (
+    STATUS_STYLES[normalizedStatus] || {
+      label: status || "Unknown",
+      className: "bg-slate-50 text-slate-600 ring-slate-100",
+    }
+  );
+}
+
+export default function ApplicationCard({ application }) {
+  if (!application) return null;
+
+  const {
+    tracking_number,
+    service_type,
+    service,
+    status,
+    county_id,
+    created_at,
+  } = application;
+
+  const statusInfo = getStatus(status);
+
+  const serviceName =
+    service_type ||
+    service?.name ||
+    "Government Service";
+
+  const formattedDate = created_at
+    ? new Date(created_at).toLocaleDateString()
+    : null;
+
+  return (
+    <article className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg">
+      {/* Top section */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          {/* Service icon */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 3v5h5"
+              />
+            </svg>
+          </div>
+
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold text-slate-900">
+              {serviceName}
+            </h3>
+
+            <p className="mt-1 truncate text-xs text-slate-500">
+              Ref: {tracking_number || "Not available"}
+            </p>
+          </div>
+        </div>
+
+        {/* Status */}
+        <span
+          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${statusInfo.className}`}
+        >
+          {statusInfo.label}
+        </span>
+      </div>
+
+      {/* Meta information */}
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            County
+          </p>
+
+          <p className="mt-1 text-sm font-medium text-slate-700">
+            {county_id || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            Submitted
+          </p>
+
+          <p className="mt-1 text-sm font-medium text-slate-700">
+            {formattedDate || "N/A"}
+          </p>
+        </div>
+      </div>
+
+      {/* Action */}
+      <Link
+        to={`/track/${tracking_number}`}
+        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        Track application
+
+        <svg
+          className="h-4 w-4 transition-transform group-hover:translate-x-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"
+          />
+        </svg>
+      </Link>
+    </article>
+  );
+}
+
+
+<!-- timeline -->
+ import { Link } from "react-router-dom";
+
+const STATUS_STYLES = {
+  SUBMITTED: {
+    label: "Submitted",
+    className: "bg-blue-50 text-blue-700 ring-blue-100",
+  },
+  UNDER_REVIEW: {
+    label: "Under Review",
+    className: "bg-amber-50 text-amber-700 ring-amber-100",
+  },
+  ACTION_REQUIRED: {
+    label: "Action Required",
+    className: "bg-orange-50 text-orange-700 ring-orange-100",
+  },
+  VERIFIED: {
+    label: "Verified",
+    className: "bg-purple-50 text-purple-700 ring-purple-100",
+  },
+  APPROVED: {
+    label: "Approved",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  },
+  REJECTED: {
+    label: "Rejected",
+    className: "bg-red-50 text-red-700 ring-red-100",
+  },
+  FINALIZED: {
+    label: "Finalized",
+    className: "bg-green-50 text-green-700 ring-green-100",
+  },
+};
+
+function getStatus(status) {
+  const normalizedStatus = status?.toUpperCase();
+
+  return (
+    STATUS_STYLES[normalizedStatus] || {
+      label: status || "Unknown",
+      className: "bg-slate-50 text-slate-600 ring-slate-100",
+    }
+  );
+}
+
+export default function ApplicationCard({ application }) {
+  if (!application) return null;
+
+  const {
+    tracking_number,
+    service_type,
+    service,
+    status,
+    county_id,
+    created_at,
+  } = application;
+
+  const statusInfo = getStatus(status);
+
+  const serviceName =
+    service_type ||
+    service?.name ||
+    "Government Service";
+
+  const formattedDate = created_at
+    ? new Date(created_at).toLocaleDateString()
+    : null;
+
+  return (
+    <article className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg">
+      {/* Top section */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          {/* Service icon */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 3v5h5"
+              />
+            </svg>
+          </div>
+
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold text-slate-900">
+              {serviceName}
+            </h3>
+
+            <p className="mt-1 truncate text-xs text-slate-500">
+              Ref: {tracking_number || "Not available"}
+            </p>
+          </div>
+        </div>
+
+        {/* Status */}
+        <span
+          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${statusInfo.className}`}
+        >
+          {statusInfo.label}
+        </span>
+      </div>
+
+      {/* Meta information */}
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            County
+          </p>
+
+          <p className="mt-1 text-sm font-medium text-slate-700">
+            {county_id || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            Submitted
+          </p>
+
+          <p className="mt-1 text-sm font-medium text-slate-700">
+            {formattedDate || "N/A"}
+          </p>
+        </div>
+      </div>
+
+      {/* Action */}
+      <Link
+        to={`/track/${tracking_number}`}
+        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        Track application
+
+        <svg
+          className="h-4 w-4 transition-transform group-hover:translate-x-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"
+          />
+        </svg>
+      </Link>
+    </article>
+  );
+}
+
+<!-- servicetracker -->
+ import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
+export default function ServiceTracker() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch("/api/services");
+
+      if (!response.ok) {
+        throw new Error(
+          `Unable to load services (${response.status})`
+        );
+      }
+
+      const payload = await response.json();
+
+      const records = Array.isArray(payload)
+        ? payload
+        : payload?.results || [];
+
+      setServices(records);
+    } catch (err) {
+      console.error("Services error:", err);
+
+      setError(
+        err.message || "Unable to load available services."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8">
+            <div className="h-8 w-64 animate-pulse rounded bg-slate-200" />
+            <div className="mt-3 h-4 w-96 animate-pulse rounded bg-slate-200" />
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, index) => (
+              <div
+                key={index}
+                className="animate-pulse rounded-2xl bg-white p-6 shadow-sm"
+              >
+                <div className="h-12 w-12 rounded-xl bg-slate-200" />
+                <div className="mt-5 h-5 w-3/4 rounded bg-slate-200" />
+                <div className="mt-3 h-4 w-full rounded bg-slate-100" />
+                <div className="mt-6 h-10 rounded-xl bg-slate-200" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-2xl">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <h2 className="font-semibold text-red-800">
+              Unable to load services
+            </h2>
+
+            <p className="mt-2 text-sm text-red-600">
+              {error}
+            </p>
+
+            <button
+              onClick={fetchServices}
+              className="mt-5 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-50 p-6 md:p-8">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <section className="mb-8">
+          <div className="rounded-3xl bg-gradient-to-r from-slate-900 to-blue-900 p-8 shadow-lg">
+            <p className="text-sm font-semibold uppercase tracking-wider text-blue-300">
+              County Services
+            </p>
+
+            <h1 className="mt-2 text-3xl font-bold text-white md:text-4xl">
+              What service do you need?
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+              Browse available county services, submit an
+              application and track its progress from your
+              dashboard.
+            </p>
+          </div>
+        </section>
+
+        {/* Service count */}
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">
+              Available services
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              {services.length} service
+              {services.length !== 1 ? "s" : ""} available
+            </p>
+          </div>
+        </div>
+
+        {/* Empty state */}
+        {services.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+            <h3 className="font-semibold text-slate-800">
+              No services available
+            </h3>
+
+            <p className="mt-2 text-sm text-slate-500">
+              There are currently no services available for
+              application.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {services.map((service) => (
+              <ServiceCard
+                key={service.id}
+                service={service}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+function ServiceCard({ service }) {
+  return (
+    <article className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl">
+      {/* Icon */}
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
+        <svg
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13 3v5h5"
+          />
+        </svg>
+      </div>
+
+      {/* Content */}
+      <div className="mt-5 flex-1">
+        <h3 className="font-semibold text-slate-900">
+          {service.name}
+        </h3>
+
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-500">
+          {service.description ||
+            "Apply for this county service online and track your application."}
+        </p>
+      </div>
+
+      {/* Action */}
+      <Link
+        to={`/apply/${service.id}`}
+        className="mt-6 flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
+      >
+        Apply for service
+      </Link>
+    </article>
+  );
+}
+
+<!-- console -->
+ import React, { useEffect, useState } from "react";
+
+const API_URL = "http://127.0.0.1:8000/api/applications/";
+
+export default function AdminConsole() {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token = localStorage.getItem("access");
+
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && {
+              Authorization: `Bearer ${token}`,
+            }),
+          },
+        });
+
+        const contentType = response.headers.get("content-type");
+
+        if (!response.ok) {
+          let message = `Request failed with status ${response.status}`;
+
+          if (contentType?.includes("application/json")) {
+            const data = await response.json();
+            message = data.detail || data.message || message;
+          } else {
+            const text = await response.text();
+            console.error("Server returned:", text.substring(0, 300));
+          }
+
+          throw new Error(message);
+        }
+
+        if (!contentType?.includes("application/json")) {
+          const text = await response.text();
+
+          console.error("Expected JSON but received:", text.substring(0, 300));
+
+          throw new Error(
+            "The server returned HTML instead of JSON. Check the API URL and Django routes."
+          );
+        }
+
+        const data = await response.json();
+
+
+  const records = Array.isArray(data)
+          ? data
+          : Array.isArray(data.results)
+          ? data.results
+          : [];
+
+        setApplications(records);
+      } catch (err) {
+        console.error("Admin applications error:", err);
+        setError(err.message || "Failed to load applications.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
+  const handleReview = (application) => {
+    console.log(
+      "Reviewing application:",
+      application.tracking_number || application.id
+    );
+
+    // Add navigation here later
+    // navigate(`/admin/applications/${application.id}`);
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status?.toUpperCase()) {
+      case "PENDING":
+      case "SUBMITTED":
+      case "UNDER_REVIEW":
+        return "bg-amber-100 text-amber-800";
+
+      case "APPROVED":
+      case "VERIFIED":
+      case "FINALIZED":
+        return "bg-green-100 text-green-800";
+
+      case "REJECTED":
+        return "bg-red-100 text-red-800";
+
+      case "ACTION_REQUIRED":
+        return "bg-blue-100 text-blue-800";
+
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 text-slate-600 animate-pulse font-medium">
+        Loading admin console records...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-5">
+          <h2 className="font-semibold text-red-700">
+            Unable to load applications
+          </h2>
+
+          <p className="mt-2 text-sm text-red-600">
+            {error}
+          </p>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl p-6 md:p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">
+          Admin Console
+        </h1>
+
+        <p className="mt-2 text-sm text-slate-500">
+          Overview of submitted county service applications requiring review.
+        </p>
+      </div>
+
+      {/* Applications Table */}
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="border-b border-slate-200 bg-slate-100">
+              <tr>
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  Reference
+                </th>
+
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  Applicant
+                </th>
+
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  Status
+                </th>
+
+                <th className="p-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  Action
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-200">
+              {applications.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="p-8 text-center text-sm text-slate-500"
+                  >
+                    No applications pending review.
+                  </td>
+                </tr>
+              ) : (
+                applications.map((app) => {
+                  const reference =
+                    app.tracking_number ||
+                    app.reference ||
+                    app.id;
+
+                  const applicant =
+                    app.applicant_name ||
+                    app.applicantName ||
+                    app.user?.full_name ||
+                    app.user?.email ||
+                    "Unknown Applicant";
+
+                  const status =
+                    app.status || "UNKNOWN";
+
+                  return (
+                    <tr
+                      key={app.id || reference}
+                      className="transition-colors hover:bg-slate-50"
+                    >
+                      <td className="p-4 text-sm font-medium text-slate-900">
+                        {reference}
+                      </td>
+
+                      <td className="p-4 text-sm text-slate-700">
+                        {applicant}
+                      </td>
+
+                      <td className="p-4 text-sm">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusStyle(
+                            status
+                          )}`}
+                        >
+                          {status.replaceAll("_", " ")}
+                        </span>
+                      </td>
+
+                      <td className="p-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleReview(app)}
+                          className="rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-blue-700"
+                        >
+                          Review
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+<!-- applyservices -->
+ import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+
+import {
+  createApplication
+} from "../components/Services/Services";
+
+export default function ApplyService() {
+  const { serviceId } = useParams();
+  const navigate = useNavigate();
+
+  const [service, setService] = useState(null);
+
+  const [form, setForm] = useState({
+    county_id: "",
+    description: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadService = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const services = await getServices();
+
+        const selected = services.find(
+          (item) =>
+            String(item.id) ===
+            String(serviceId)
+        );
+
+        if (!selected) {
+          throw new Error(
+            "Government service not found."
+          );
+        }
+
+        if (mounted) {
+          setService(selected);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(
+            err.message ||
+              "Unable to load service."
+          );
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadService();
+
+    return () => {
+      mounted = false;
+    };
+  }, [serviceId]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setSubmitting(true);
+      setError("");
+
+      const application =
+        await createApplication({
+          service_id: serviceId,
+          ...form,
+        });
+
+      if (!application?.tracking_number) {
+        throw new Error(
+          "Application submitted, but no tracking reference was returned."
+        );
+      }
+
+      navigate(
+        `/track/${application.tracking_number}`
+      );
+    } catch (err) {
+      setError(
+        err.message ||
+          "Unable to submit application."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-6xl animate-pulse">
+          <div className="h-8 w-64 rounded bg-slate-200" />
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            <div className="h-80 rounded-2xl bg-white" />
+            <div className="h-80 rounded-2xl bg-white lg:col-span-2" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!service) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-red-50 p-8">
+          <h1 className="text-xl font-bold text-red-800">
+            Service unavailable
+          </h1>
+
+          <p className="mt-2 text-sm text-red-600">
+            {error}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-50 p-6 md:p-8">
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <header className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+            Application
+          </p>
+
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">
+            Apply for a service
+          </h1>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Complete the application details below.
+          </p>
+        </header>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Service summary */}
+          <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <svg
+                className="h-7 w-7"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+
+            <h2 className="mt-5 text-lg font-bold text-slate-900">
+              {service.name}
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              {service.description ||
+                "Complete this application to request the selected county service."}
+            </p>
+
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Application process
+              </p>
+
+              <div className="mt-4 space-y-3 text-sm text-slate-600">
+                <p>✓ Submit application</p>
+                <p>✓ Application review</p>
+                <p>✓ Verification</p>
+                <p>✓ Track progress online</p>
+              </div>
+            </div>
+          </aside>
+
+          {/* Application form */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
+            {error && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Application details
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Provide the information required to process
+                  your request.
+                </p>
+              </div>
+
+              {/* County */}
+              <div>
+                <label
+                  htmlFor="county_id"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  County
+                </label>
+
+                <input
+                  id="county_id"
+                  name="county_id"
+                  value={form.county_id}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter county"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label
+                  htmlFor="description"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  Application details
+                </label>
+
+                <textarea
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  required
+                  rows={7}
+                  placeholder="Provide the information required for this application..."
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Submit */}
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {submitting
+                    ? "Submitting application..."
+                    : "Submit application"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+<!-- dashboard -->
+ import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+
+import {
+  createApplication
+} from "../components/Services/Services";
+
+export default function ApplyService() {
+  const { serviceId } = useParams();
+  const navigate = useNavigate();
+
+  const [service, setService] = useState(null);
+
+  const [form, setForm] = useState({
+    county_id: "",
+    description: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadService = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const services = await getServices();
+
+        const selected = services.find(
+          (item) =>
+            String(item.id) ===
+            String(serviceId)
+        );
+
+        if (!selected) {
+          throw new Error(
+            "Government service not found."
+          );
+        }
+
+        if (mounted) {
+          setService(selected);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(
+            err.message ||
+              "Unable to load service."
+          );
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadService();
+
+    return () => {
+      mounted = false;
+    };
+  }, [serviceId]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setSubmitting(true);
+      setError("");
+
+      const application =
+        await createApplication({
+          service_id: serviceId,
+          ...form,
+        });
+
+      if (!application?.tracking_number) {
+        throw new Error(
+          "Application submitted, but no tracking reference was returned."
+        );
+      }
+
+      navigate(
+        `/track/${application.tracking_number}`
+      );
+    } catch (err) {
+      setError(
+        err.message ||
+          "Unable to submit application."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-6xl animate-pulse">
+          <div className="h-8 w-64 rounded bg-slate-200" />
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            <div className="h-80 rounded-2xl bg-white" />
+            <div className="h-80 rounded-2xl bg-white lg:col-span-2" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!service) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-red-50 p-8">
+          <h1 className="text-xl font-bold text-red-800">
+            Service unavailable
+          </h1>
+
+          <p className="mt-2 text-sm text-red-600">
+            {error}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-50 p-6 md:p-8">
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <header className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600">
+            Application
+          </p>
+
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">
+            Apply for a service
+          </h1>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Complete the application details below.
+          </p>
+        </header>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Service summary */}
+          <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <svg
+                className="h-7 w-7"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+
+            <h2 className="mt-5 text-lg font-bold text-slate-900">
+              {service.name}
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              {service.description ||
+                "Complete this application to request the selected county service."}
+            </p>
+
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Application process
+              </p>
+
+              <div className="mt-4 space-y-3 text-sm text-slate-600">
+                <p>✓ Submit application</p>
+                <p>✓ Application review</p>
+                <p>✓ Verification</p>
+                <p>✓ Track progress online</p>
+              </div>
+            </div>
+          </aside>
+
+          {/* Application form */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
+            {error && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Application details
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Provide the information required to process
+                  your request.
+                </p>
+              </div>
+
+              {/* County */}
+              <div>
+                <label
+                  htmlFor="county_id"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  County
+                </label>
+
+                <input
+                  id="county_id"
+                  name="county_id"
+                  value={form.county_id}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter county"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label
+                  htmlFor="description"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  Application details
+                </label>
+
+                <textarea
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  required
+                  rows={7}
+                  placeholder="Provide the information required for this application..."
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Submit */}
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {submitting
+                    ? "Submitting application..."
+                    : "Submit application"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+<!-- trackservice -->
+ import React, { useEffect, useState } from "react";
+import { getApplicationByTrackingNumber } from "../components/Services/Services";
+import { TRACKING_STEPS } from "../components/Services/constant";
+
+export default function TrackService({ trackingNumber: propTrackingNumber }) {
+  const [application, setApplication] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const resolveTrackingNumber = () => {
+    if (propTrackingNumber?.trim()) return propTrackingNumber.trim().toUpperCase();
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tracking")?.trim().toUpperCase() || "";
+  };
+
+  useEffect(() => {
+    const trackingNumber = resolveTrackingNumber();
+    if (!trackingNumber) {
+      setError("Please provide a valid tracking reference.");
+      setLoading(false);
+      return;
+    }
+
+    const loadApplication = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getApplicationByTrackingNumber(trackingNumber);
+        if (!data) throw new Error("Application not found.");
+        setApplication(data);
+      } catch (err) {
+        setError(err?.message || "Unable to retrieve tracking data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadApplication();
+  }, [propTrackingNumber]);
+
+  if (loading) return <div className="p-6 text-slate-600 animate-pulse">Loading progress details...</div>;
+  if (error) return <div className="p-6 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>;
+  if (!application) return <div className="p-6 text-slate-600">Enter a tracking number to monitor your service request.</div>;
+
+  const currentStatus = (application.status || "SUBMITTED").toUpperCase();
+
+  // Determine active step index for multi-state government workflow
+  const getStepIndex = (status) => {
+    if (["SUBMITTED"].includes(status)) return 0;
+    if (["UNDER_REVIEW", "ACTION_REQUIRED"].includes(status)) return 1;
+    if (["VERIFIED"].includes(status)) return 2;
+    if (["APPROVED", "REJECTED", "FINALIZED"].includes(status)) return 3;
+    return 0;
+  };
+
+  const currentStepIndex = getStepIndex(currentStatus);
+
+  return (
+    <div className="rounded-xl bg-white p-6 md:p-8 shadow-sm border border-slate-200 max-w-4xl mx-auto">
+      <div className="mb-6 border-b border-slate-100 pb-4">
+        <h1 className="text-2xl font-bold text-slate-900">Service Progress Tracker</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Tracking Reference: <span className="font-semibold text-slate-800">{application.tracking_number}</span>
+        </p>
+      </div>
+
+      {/* Service Meta Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <InfoCard title="Service Type" value={application.service_type || application.service?.name} />
+        <InfoCard title="County Office" value={application.county_id} />
+        <InfoCard title="Live Status" value={currentStatus.replaceAll("_", " ")} highlight />
+      </div>
+
+      {/* Multi-State Timeline Progress Flow */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-slate-900 mb-6">Workflow Milestones</h2>
+        <div className="relative ml-4 space-y-8 border-l-2 border-slate-200 pl-6">
+          {TRACKING_STEPS.map((step, index) => {
+            const isCompleted = index < currentStepIndex;
+            const isCurrent = index === currentStepIndex;
+            const isRejected = isCurrent && currentStatus === "REJECTED";
+
+            return (
+              <div key={step.id} className="relative flex items-start">
+                <div
+                  className={`absolute -left-[37px] flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                    isCompleted
+                      ? "bg-emerald-600 text-white"
+                      : isRejected
+                      ? "bg-red-600 text-white ring-4 ring-red-100"
+                      : isCurrent
+                      ? "bg-blue-600 text-white ring-4 ring-blue-100 animate-pulse"
+                      : "bg-slate-200 text-slate-500"
+                  }`}
+                >
+                  {isCompleted ? "✓" : index + 1}
+                </div>
+
+                <div>
+                  <p className={`font-semibold ${isCurrent ? "text-blue-600 text-base" : "text-slate-700"}`}>
+                    {step.label}
+                  </p>
+                  {isCurrent && (
+                    <span className="inline-block mt-1 px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
+                      Currently On Progress
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoCard({ title, value, highlight }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{title}</p>
+      <p className={`mt-1 font-semibold ${highlight ? "text-blue-600" : "text-slate-800"}`}>{value || "N/A"}</p>
+    </div>
+  );
+}
+
+<!-- navbar -->
+ import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Search, Bell, User, LogOut, Menu, X, Shield, Building2, LogIn 
+} from 'lucide-react';
+
+export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTracking, onLogout }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() && onSearchTracking) {
+      onSearchTracking(searchQuery.trim().toUpperCase());
+    }
+  };
+
+  const handleSignOutClick = () => {
+    setShowProfileMenu(false);
+    if (onLogout) {
+      onLogout();
+    } else {
+      localStorage.removeItem("access");
+      navigate("/login");
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-30 h-16 bg-slate-800 border-b border-slate-700 text-white px-4 md:px-6 flex items-center justify-between shadow-sm">
+      {/* Left: Brand & Mobile Menu Trigger */}
+      <div className="flex items-center gap-3">
+        {user && (
+          <button
+            onClick={toggleSidebar}
+            aria-label="Toggle Navigation Sidebar"
+            className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+          >
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        )}
+        <div className="flex items-center gap-2">
+          <div className="bg-amber-500/10 text-amber-400 p-2 rounded-lg font-bold border border-amber-500/20">
+            <Building2 size={20} />
+          </div>
+          <div className="hidden sm:block">
+            <Link to="/" className="text-sm font-semibold tracking-wide text-amber-400 hover:underline">
+              County Service Portal
+            </Link>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Civic Tracker Engine</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Center: Global Quick Tracking Input */}
+      <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md mx-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Track status (e.g. TRK-B12CKP5)..."
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+          />
+        </div>
+      </form>
+
+      {/* Right Actions / Authentication Profile Menu */}
+      <div className="flex items-center gap-3">
+        {user ? (
+          <>
+            {/* Role Badge */}
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-500/10 text-amber-400 border-amber-500/20">
+              <Shield size={12} />
+              {user?.role || 'CITIZEN'}
+            </span>
+
+            {/* Notifications Icon */}
+            <button className="relative p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+              <Bell size={18} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full" />
+            </button>
+
+            {/* User Profile Menu Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center gap-2 p-1.5 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-md bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xs">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              </button>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-2 z-50 text-white text-sm">
+                  <div className="px-4 py-2 border-b border-slate-800">
+                    <p className="font-medium text-white truncate">{user?.email}</p>
+                    <p className="text-xs text-slate-400 font-mono">County: {user?.county_code || 'Nairobi'}</p>
+                  </div>
+                  <Link 
+                    to="/profile" 
+                    onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 transition-colors text-slate-300 hover:text-white"
+                  >
+                    <User size={16} /> Profile & Settings
+                  </Link>
+                  <button 
+                    onClick={handleSignOutClick}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors text-left"
+                  >
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          /* Unauthenticated State: Show Login / Register Links */
+          <div className="flex items-center gap-2">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg border border-slate-600 transition-all"
+            >
+              <LogIn size={14} /> Login
+            </Link>
+            <Link
+              to="/register"
+              className="hidden sm:inline-flex items-center bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-semibold px-3 py-2 rounded-lg transition-all"
+            >
+              Register
+            </Link>
+          </div>
+        )}
+      </div>
+    </header> 
+  );
+}
+
+<!-- constant -->
+ export const WORKFLOW_STATES = {
+  SUBMITTED: { label: "Submitted", step: 1, color: "blue" },
+  UNDER_REVIEW: { label: "Under Review", step: 2, color: "amber" },
+  ACTION_REQUIRED: { label: "Action Required", step: 2, color: "orange" },
+  VERIFIED: { label: "Verified", step: 3, color: "purple" },
+  APPROVED: { label: "Approved", step: 4, color: "green" },
+  REJECTED: { label: "Rejected", step: 4, color: "red" },
+  FINALIZED: { label: "Finalized", step: 4, color: "emerald" },
+};
+
+export const TRACKING_STEPS = [
+  { id: "SUBMITTED", label: "Application Submitted" },
+  { id: "UNDER_REVIEW", label: "Under Review / Processing" },
+  { id: "VERIFIED", label: "Compliance Verified" },
+  { id: "FINALIZED", label: "Final Outcome (Approved/Rejected)" },
+];
+
+<!-- services.js -->
+ 
+import api from "./api";
+
+// Get all citizen applications (supports admin or user scope depending on backend)
+export const getApplications = async () => {
+  const response = await api.get("/applications/");
+  return response.data;
+};
+
+// Get a single application by tracking number (aliases getApplication for clarity)
+export const getApplication = async (trackingNumber) => {
+  const response = await api.get(`/applications/${trackingNumber}/`);
+  return response.data;
+};
+
+// Explicit alias to match your TrackService component import requirement
+export const getApplicationByTrackingNumber = getApplication;
+
+// Create a new government service application
+export const createApplication = async (data) => {
+  const response = await api.post("/applications/", data);
+  return response.data;
+};
+
+// Update application status (Admin workflow action)
+export const updateApplicationStatus = async (
+  applicationId,
+  status,
+  comment = ""
+) => {
+  const response = await api.patch(
+    `/applications/${applicationId}/status/`,
+    {
+      status,
+      comment,
+    }
+  );
+  return response.data;
+};
+
+<!-- home -->
+ import React from 'react';
+import { Link } from 'react-router-dom';
+import { ShieldCheck, FileText, Search, ArrowRight } from 'lucide-react';
+
+export default function Home({ user }) {
+  return (
+    <div className="space-y-12">
+      {/* Hero Banner Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-8 md:p-12 shadow-xl">
+        <div className="relative z-10 max-w-2xl space-y-4">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <ShieldCheck size={14} /> Official County Government Portal
+          </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+            County Service Tracker
+          </h1>
+          <p className="text-lg text-slate-300">
+            Access, apply, and monitor government services with complete transparency, speed, and reliability.
+          </p>
+
+          <div className="flex flex-wrap gap-4 pt-4">
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg"
+              >
+                Go to Dashboard <ArrowRight size={18} />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg"
+                >
+                  Sign In <ArrowRight size={18} />
+                </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-xl border border-slate-600 transition-all"
+                >
+                  Register Account
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Grid Overview */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 space-y-3">
+          <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+            <FileText size={20} />
+          </div>
+          <h2 className="text-xl font-bold text-white">Streamlined Applications</h2>
+          <p className="text-sm text-slate-400">
+            Submit required details and county documents digitally without standing in physical queues.
+          </p>
+        </div>
+
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 space-y-3">
+          <div className="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+            <Search size={20} />
+          </div>
+          <h2 className="text-xl font-bold text-white">Real-Time FSM Tracking</h2>
+          <p className="text-sm text-slate-400">
+            Monitor your application state updates step-by-step from submission to final approval or verification.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
+<!-- navbar -->
+ 
