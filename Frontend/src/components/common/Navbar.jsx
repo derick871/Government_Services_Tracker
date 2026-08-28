@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+ import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Search, Bell, User, LogOut, Menu, X, Shield, Building2 
+  Search, Bell, User, LogOut, Menu, X, Shield, Building2, LogIn 
 } from 'lucide-react';
 
-export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTracking }) {
+export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTracking, onLogout }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const navigate = useNavigate();
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -14,87 +16,123 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
     }
   };
 
-  return(
-    <header className="sticky top-0 z-30 h-16 bg-slate-700 border-b border-slate-400 text-white px-4 md:px-6 flex items-center justify-between shadow-sm">
+  const handleSignOutClick = () => {
+    setShowProfileMenu(false);
+    if (onLogout) {
+      onLogout();
+    } else {
+      localStorage.removeItem("access");
+      navigate("/login");
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-30 h-16 bg-slate-800 border-b border-slate-700 text-white px-4 md:px-6 flex items-center justify-between shadow-sm">
       {/* Left: Brand & Mobile Menu Trigger */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={toggleSidebar}
-          aria-label="Toggle Navigation Sidebar"
-          className="p-2 rounded-lg text-white hover:text-amber-900 hover:bg-amber-500 transition-colors"
-        >
-          {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-
+        {user && (
+          <button
+            onClick={toggleSidebar}
+            aria-label="Toggle Navigation Sidebar"
+            className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+          >
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        )}
         <div className="flex items-center gap-2">
-          <div className="bg-slate-600 p-2 rounded-lg text-white font-bold">
+          <div className="bg-amber-500/10 text-amber-400 p-2 rounded-lg font-bold border border-amber-500/20">
             <Building2 size={20} />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-sm font-semibold tracking-wide text-amber-500">County Service Portal</h1>
-            <p className="text-[10px] text-white uppercase tracking-wider font-semi-bolb">Civic Tracker Engine</p>
+            <Link to="/" className="text-sm font-semibold tracking-wide text-amber-400 hover:underline">
+              County Service Portal
+            </Link>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Civic Tracker Engine</p>
           </div>
         </div>
-         {/* Center: Global Quick Tracking Input */}
+      </div>
+
+      {/* Center: Global Quick Tracking Input */}
       <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md mx-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" size={16} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Track status (e.g. TRK-B12CKP5)..."
-            className="w-full bg-slate-700 border border-grey-200 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semi-bold transition-all"
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
           />
         </div>
       </form>
-       {/*  Actions, Role Badge & User Context */}
+
+      {/* Right Actions / Authentication Profile Menu */}
       <div className="flex items-center gap-3">
-        {/* Role Badge */}
-        <span className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-          user?.role === 'OFFICER' 
-            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
-            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-        }`}>
-          <Shield size={12} />
-          {user?.role || 'CITIZEN'}
-        </span>
+        {user ? (
+          <>
+            {/* Role Badge */}
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-500/10 text-amber-400 border-amber-500/20">
+              <Shield size={12} />
+              {user?.role || 'CITIZEN'}
+            </span>
 
-          {/* Notifications Icon */}
-        <button className="relative p-2 rounded-lg text-amber-400 hover:text-amber-100 hover:bg-slate-400 transition-colors">
-          <Bell size={18} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-amber-900" />
-        </button>
-        {/* User Profile Menu */}
-        <div className="relative">
-          <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2 p-2 rounded-lg border border-slate-400 hover:bg-amber-800 transition-colors"
-          >
-            <div className="w-7 h-7 rounded-md bg-slate-700 flex items-center justify-center font-bold text-xs text-white">
-              {user?.email?.charAt(0).toUpperCase() || 'D'}
-            </div>
-          </button>
+            {/* Notifications Icon */}
+            <button className="relative p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+              <Bell size={18} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full" />
+            </button>
 
-          {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-800 shadow-xl py-2 z-50 text-white text-sm">
-              <div className="px-4 py-2 border-b border-slate-400">
-                <p className="font-medium text-white truncate">{user?.email || 'user@county.go.ke'}</p>
-                <p className="text-xs text-white font-mono">County: {user?.county_code || 'Nairobi'}</p>
-              </div>
-              <a href="#profile" className="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 transition-colors">
-                <User size={16} /> Profile & Settings
-              </a>
-              <button 
-                onClick={() => console.log('Logout executed')}
-                className="w-full flex items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors text-left"
+            {/* User Profile Menu Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="flex items-center gap-2 p-1.5 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors"
               >
-                <LogOut size={16} /> Sign Out
+                <div className="w-7 h-7 rounded-md bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xs">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </div>
               </button>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-2 z-50 text-white text-sm">
+                  <div className="px-4 py-2 border-b border-slate-800">
+                    <p className="font-medium text-white truncate">{user?.email}</p>
+                    <p className="text-xs text-slate-400 font-mono">County: {user?.county_code || 'Nairobi'}</p>
+                  </div>
+                  <Link 
+                    to="/profile" 
+                    onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 transition-colors text-slate-300 hover:text-white"
+                  >
+                    <User size={16} /> Profile & Settings
+                  </Link>
+                  <button 
+                    onClick={handleSignOutClick}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors text-left"
+                  >
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          /* Unauthenticated State: Show Login / Register Links */
+          <div className="flex items-center gap-2">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-2 rounded-lg border border-slate-600 transition-all"
+            >
+              <LogIn size={14} /> Login
+            </Link>
+            <Link
+              to="/register"
+              className="hidden sm:inline-flex items-center bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-semibold px-3 py-2 rounded-lg transition-all"
+            >
+              Register
+            </Link>
+          </div>
+        )}
       </div>
     </header> 
   );
