@@ -1,5 +1,36 @@
 import { Link } from "react-router-dom";
 
+const STATUS_STYLES = {
+  SUBMITTED: {
+    label: "Submitted",
+    className: "bg-blue-50 text-blue-700 ring-blue-100",
+  },
+  UNDER_REVIEW: {
+    label: "Under Review",
+    className: "bg-amber-50 text-amber-700 ring-amber-100",
+  },
+  ACTION_REQUIRED: {
+    label: "Action Required",
+    className: "bg-orange-50 text-orange-700 ring-orange-100",
+  },
+  VERIFIED: {
+    label: "Verified",
+    className: "bg-purple-50 text-purple-700 ring-purple-100",
+  },
+  APPROVED: {
+    label: "Approved",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  },
+  REJECTED: {
+    label: "Rejected",
+    className: "bg-red-50 text-red-700 ring-red-100",
+  },
+  APPROVED: {
+    label: "Approved",
+    className: "bg-green-50 text-green-700 ring-green-100",
+  },
+};
+
 export default function ApplicationCard({
   application,
 }) {
