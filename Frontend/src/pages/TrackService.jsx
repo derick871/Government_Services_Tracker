@@ -1,38 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { getApplicationByTrackingNumber } from "../Services/services";
-
-const WORKFLOW_STEPS = [
-  { id: "SUBMITTED", label: "Submitted" },
-  { id: "UNDER_REVIEW", label: "Under Review" },
-  { id: "FINALIZED", label: "Finalized" },
-];
+ import React, { useEffect, useState } from "react";
+import { getApplicationByTrackingNumber } from "../components/Services/Services";
+import { TRACKING_STEPS } from "../components/Services/constant";
 
 export default function TrackService({ trackingNumber: propTrackingNumber }) {
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /*
-   * Accept tracking number from:
-   
-   */
-  const getTrackingNumber = () => {
-    if (propTrackingNumber?.trim()) {
-      return propTrackingNumber.trim().toUpperCase();
-    }
-
+  const resolveTrackingNumber = () => {
+    if (propTrackingNumber?.trim()) return propTrackingNumber.trim().toUpperCase();
     const params = new URLSearchParams(window.location.search);
-    const urlTrackingNumber = params.get("tracking");
-
-    return urlTrackingNumber?.trim().toUpperCase() || "";
+    return params.get("tracking")?.trim().toUpperCase() || "";
   };
 
   useEffect(() => {
-    const trackingNumber = getTrackingNumber();
-
+    const trackingNumber = resolveTrackingNumber();
     if (!trackingNumber) {
-      setApplication(null);
-      setError("Please provide a valid tracking number.");
+      setError("Please provide a valid tracking reference.");
       setLoading(false);
       return;
     }
@@ -41,26 +25,11 @@ export default function TrackService({ trackingNumber: propTrackingNumber }) {
       try {
         setLoading(true);
         setError("");
-        setApplication(null);
-
-        const data = await getApplicationByTrackingNumber(
-          trackingNumber
-        );
-
-        if (!data) {
-          throw new Error("Application was not found.");
-        }
-
+        const data = await getApplicationByTrackingNumber(trackingNumber);
+        if (!data) throw new Error("Application not found.");
         setApplication(data);
       } catch (err) {
-        console.error("Tracking request failed:", err);
-
-        setError(
-          err?.response?.data?.detail ||
-            err?.response?.data?.message ||
-            err?.message ||
-            "Unable to load application tracking data."
-        );
+        setError(err?.message || "Unable to retrieve tracking data.");
       } finally {
         setLoading(false);
       }
@@ -69,215 +38,72 @@ export default function TrackService({ trackingNumber: propTrackingNumber }) {
     loadApplication();
   }, [propTrackingNumber]);
 
-  /* ---------------------------------
-     Loading
-  ---------------------------------- */
+  if (loading) return <div className="p-6 text-slate-600 animate-pulse">Loading progress details...</div>;
+  if (error) return <div className="p-6 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>;
+  if (!application) return <div className="p-6 text-slate-600">Enter a tracking number to monitor your service request.</div>;
 
-  if (loading) {
-    return (
-      <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="animate-pulse text-slate-600">
-          Loading tracking information...
-        </p>
-      </div>
-    );
-  }
+  const currentStatus = (application.status || "SUBMITTED").toUpperCase();
 
-  /* ---------------------------------
-     Error
-  ---------------------------------- */
+  // Determine active step index for multi-state government workflow
+  const getStepIndex = (status) => {
+    if (["SUBMITTED"].includes(status)) return 0;
+    if (["UNDER_REVIEW", "ACTION_REQUIRED"].includes(status)) return 1;
+    if (["VERIFIED"].includes(status)) return 2;
+    if (["APPROVED", "REJECTED", "FINALIZED"].includes(status)) return 3;
+    return 0;
+  };
 
-  if (error) {
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
-        <h2 className="font-semibold text-red-700">
-          Unable to load application
-        </h2>
-
-        <p className="mt-2 text-sm text-red-600">
-          {error}
-        </p>
-      </div>
-    );
-  }
-
-  /* ---------------------------------
-     Empty
-  ---------------------------------- */
-
-  if (!application) {
-    return (
-      <div className="rounded-xl bg-white p-6 shadow-sm">
-        <p className="text-slate-600">
-          Enter a tracking number to view your application.
-        </p>
-      </div>
-    );
-  }
-
-  const status = application.status || "SUBMITTED";
-
-  /* ---------------------------------
-     Determine workflow step
-  ---------------------------------- */
-
-  let currentStepIndex = 0;
-
-  if (status === "UNDER_REVIEW") {
-    currentStepIndex = 1;
-  }
-
-  if (
-    status === "VERIFIED" ||
-    status === "APPROVED" ||
-    status === "REJECTED" ||
-    status === "FINALIZED"
-  ) {
-    currentStepIndex = 2;
-  }
+  const currentStepIndex = getStepIndex(currentStatus);
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Track Application
-        </h1>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Tracking Number:
-          <span className="ml-2 font-semibold text-slate-700">
-            {application.tracking_number || "N/A"}
-          </span>
+    <div className="rounded-xl bg-white p-6 md:p-8 shadow-sm border border-slate-200 max-w-4xl mx-auto">
+      <div className="mb-6 border-b border-slate-100 pb-4">
+        <h1 className="text-2xl font-bold text-slate-900">Service Progress Tracker</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Tracking Reference: <span className="font-semibold text-slate-800">{application.tracking_number}</span>
         </p>
       </div>
 
-      {/* Application details */}
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <InfoCard
-          title="County"
-          value={application.county_id}
-        />
-
-        <InfoCard
-          title="Service"
-          value={application.service_type}
-        />
-
-        <InfoCard
-          title="Current Status"
-          value={status.replaceAll("_", " ")}
-        />
+      {/* Service Meta Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <InfoCard title="Service Type" value={application.service_type || application.service?.name} />
+        <InfoCard title="County Office" value={application.county_id} />
+        <InfoCard title="Live Status" value={currentStatus.replaceAll("_", " ")} highlight />
       </div>
 
-      {/* Timeline */}
-      <div>
-        <h2 className="mb-6 text-lg font-semibold text-slate-900">
-          Application Progress
-        </h2>
-
+      {/* Multi-State Timeline Progress Flow */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-slate-900 mb-6">Workflow Milestones</h2>
         <div className="relative ml-4 space-y-8 border-l-2 border-slate-200 pl-6">
-          {WORKFLOW_STEPS.map((step, index) => {
+          {TRACKING_STEPS.map((step, index) => {
             const isCompleted = index < currentStepIndex;
             const isCurrent = index === currentStepIndex;
-            const isRejected =
-              isCurrent && status === "REJECTED";
-
-            let label = step.label;
-
-            if (
-              step.id === "FINALIZED" &&
-              status === "APPROVED"
-            ) {
-              label = "Approved";
-            }
-
-            if (
-              step.id === "FINALIZED" &&
-              status === "REJECTED"
-            ) {
-              label = "Rejected";
-            }
+            const isRejected = isCurrent && currentStatus === "REJECTED";
 
             return (
-              <div
-                key={step.id}
-                className="relative flex items-center"
-              >
-                {/* Timeline node */}
+              <div key={step.id} className="relative flex items-start">
                 <div
-                  className={`
-                    absolute -left-[39px]
-                    flex h-7 w-7 items-center justify-center
-                    rounded-full text-xs font-bold
-                    transition-all
-
-                    ${
-                      isCompleted
-                        ? "bg-green-600 text-white"
-                        : ""
-                    }
-
-                    ${
-                      isRejected
-                        ? "bg-red-600 text-white ring-4 ring-red-100"
-                        : ""
-                    }
-
-                    ${
-                      isCurrent && !isRejected
-                        ? "bg-blue-600 text-white ring-4 ring-blue-100"
-                        : ""
-                    }
-
-                    ${
-                      !isCompleted && !isCurrent
-                        ? "bg-slate-200 text-slate-500"
-                        : ""
-                    }
-                  `}
+                  className={`absolute -left-[37px] flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                    isCompleted
+                      ? "bg-emerald-600 text-white"
+                      : isRejected
+                      ? "bg-red-600 text-white ring-4 ring-red-100"
+                      : isCurrent
+                      ? "bg-blue-600 text-white ring-4 ring-blue-100 animate-pulse"
+                      : "bg-slate-200 text-slate-500"
+                  }`}
                 >
                   {isCompleted ? "✓" : index + 1}
                 </div>
 
-                {/* Step information */}
                 <div>
-                  <p
-                    className={`
-                      font-semibold
-
-                      ${
-                        isRejected
-                          ? "text-red-600"
-                          : ""
-                      }
-
-                      ${
-                        isCurrent && !isRejected
-                          ? "text-blue-600"
-                          : ""
-                      }
-
-                      ${
-                        isCompleted
-                          ? "text-green-700"
-                          : ""
-                      }
-
-                      ${
-                        !isCompleted && !isCurrent
-                          ? "text-slate-400"
-                          : ""
-                      }
-                    `}
-                  >
-                    {label}
+                  <p className={`font-semibold ${isCurrent ? "text-blue-600 text-base" : "text-slate-700"}`}>
+                    {step.label}
                   </p>
-
                   {isCurrent && (
-                    <p className="mt-1 text-sm text-slate-500">
-                      Current application status
-                    </p>
+                    <span className="inline-block mt-1 px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
+                      Currently On Progress
+                    </span>
                   )}
                 </div>
               </div>
@@ -285,61 +111,15 @@ export default function TrackService({ trackingNumber: propTrackingNumber }) {
           })}
         </div>
       </div>
-
-      {/* Status history */}
-      {application.logs?.length > 0 && (
-        <div className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
-            Status History
-          </h2>
-
-          <div className="space-y-3">
-            {application.logs.map((log) => (
-              <div
-                key={log.id}
-                className="rounded-lg border border-slate-200 p-4"
-              >
-                <p className="font-medium text-slate-800">
-                  {log.from_state || "Created"} →{" "}
-                  {log.to_state}
-                </p>
-
-                {log.comment && (
-                  <p className="mt-1 text-sm text-slate-500">
-                    {log.comment}
-                  </p>
-                )}
-
-                {log.timestamp && (
-                  <p className="mt-2 text-xs text-slate-400">
-                    {new Date(
-                      log.timestamp
-                    ).toLocaleString()}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-/* ---------------------------------
-   Reusable information card
----------------------------------- */
-
-function InfoCard({ title, value }) {
+function InfoCard({ title, value, highlight }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm text-slate-500">
-        {title}
-      </p>
-
-      <p className="mt-1 font-semibold text-slate-800">
-        {value || "N/A"}
-      </p>
+      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{title}</p>
+      <p className={`mt-1 font-semibold ${highlight ? "text-blue-600" : "text-slate-800"}`}>{value || "N/A"}</p>
     </div>
   );
 }
