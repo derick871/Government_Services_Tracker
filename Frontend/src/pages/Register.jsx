@@ -45,6 +45,7 @@ export default function Register() {
       await client.post("/auth/register/", {
         email: form.email,
         password: form.password,
+        password_confirm: form.password_confirm,
         first_name: form.firstName,
         last_name: form.lastName,
         phone_number: form.phoneNumber,
@@ -54,13 +55,25 @@ export default function Register() {
       // Registration successful
       navigate("/login?registered=true");
 
-    } catch (error) {
-      const message =
-        error.message ||
-        "Registration failed. Please try again.";
+    } catch (err) {
+      // Extract precise backend validation or fallback gracefully
+      const responseData = err.response?.data;
+      let message = "Registration failed. Please try again.";
+
+      if (responseData) {
+        if (typeof responseData === "object") {
+          // Grab the first error key and value from Django's response dictionary
+          const firstKey = Object.keys(responseData)[0];
+          const firstError = responseData[firstKey];
+          message = Array.isArray(firstError) ? firstError[0] : firstError;
+        } else if (typeof responseData === "string") {
+          message = responseData;
+        }
+      } else {
+        message = "Unable to communicate with the server.";
+      }
 
       setError(message);
-
     } finally {
       setLoading(false);
     }
