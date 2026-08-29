@@ -139,7 +139,7 @@ else:
 CSRF_TRUSTED_ORIGINS = [
     f"https://{RENDER_EXTERNAL_HOSTNAME}" if RENDER_EXTERNAL_HOSTNAME else "http://localhost:5173",
     "https://*.onrender.com",
-]
+    "https://government-services-tracker-23.onrender.com",]
 
 
 # Django REST Framework & OpenAPI Documentation Settings
@@ -148,7 +148,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
