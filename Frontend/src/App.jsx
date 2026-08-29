@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import Register from  "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Applyservice from "./pages/Applyservice";
+import ApplyService from "./pages/ApplyService";
 import AdminConsole from "./pages/AdminConsole";
 import TrackService from "./pages/TrackService"
 import ServiceTracker from "./components/ServiceTracker"; 
@@ -25,7 +25,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/applyservice" element={<ApplyService />} />
+        <Route path="/applyservice" element={< ApplyService />} />
         <Route path="/adminconsole" element={<AdminConsole />} />
         <Route path="/trackservice" element={<TrackService />} />
         <Route path="/servicetracker" element={<ServiceTracker/>} />
