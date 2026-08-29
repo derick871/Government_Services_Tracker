@@ -55,14 +55,17 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = (
+            "id",
             "county_id",
             "service_type",
             "payload_data",
+            "tracking_number",
         )
+        read_only_fields= ("id", "tracking_number", "service_type")
 
     def validate_county_id(self, value):
         """Validate county code."""
-        if not value.strip():
+        if not value or not value.strip():
             raise serializers.ValidationError("County ID is required.")
         return value.upper()
 
@@ -71,6 +74,18 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         if not isinstance(value, dict):
             raise serializers.ValidationError("Payload must be a JSON object.")
         return value
+
+    def validate(self, attrs):
+        service_id = attrs.pop("service_id", None)
+        
+        # Cross-reference or map service_id to service_type based on CountyNotice
+        try:
+            notice = CountyNotice.objects.get(id=service_id)
+            attrs["service_type"] = notice.service_type
+        except CountyNotice.DoesNotExist:
+            raise serializers.ValidationError({"service_id": "Invalid or inactive government service ID."})
+            
+        return attrs
 
     def create(self, validated_data):
         """Create application with unique tracking number."""
