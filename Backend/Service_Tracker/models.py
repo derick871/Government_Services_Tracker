@@ -17,7 +17,7 @@ class CountyNotice(models.Model):
         max_length=30,
         choices=ServiceType.choices,
         db_index=True,
-        default= ServiceType.OTHER,
+        default= ServiceType.OTHERS,
     )
     title = models.CharField(max_length=255)
     requirements = models.JSONField(default=list)
