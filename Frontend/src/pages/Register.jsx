@@ -45,7 +45,7 @@ export default function Register() {
       await client.post("/auth/register/", {
         email: form.email,
         password: form.password,
-        password_confirm: form.password_confirm,
+        password_confirm: form.confirmPassword,
         first_name: form.firstName,
         last_name: form.lastName,
         phone_number: form.phoneNumber,
