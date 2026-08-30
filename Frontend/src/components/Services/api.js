@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Standardized Axios instance configuration for the backend
-const api = axios.create({
+const Client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 // Automatically inject JWT tokens if available in local storage
-client.interceptors.request.use((config) => {
+Client.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
