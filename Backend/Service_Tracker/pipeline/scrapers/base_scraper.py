@@ -27,3 +27,7 @@ class BaseScrapper(ABC):
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1"
         }
+    @abstractmethod
+    def scrape(self)->list[dict]:
+        """Subclasses must implement extraction logic returning dictionaries."""
+        pass
