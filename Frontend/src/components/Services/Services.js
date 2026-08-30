@@ -1,3 +1,9 @@
+//Fetch all avilable govt services
+export const getServices = async () => {
+  const responce = await api.get("/services/");
+  return response.data;
+};
+
 // Get all citizen applications (supports admin or user scope depending on backend)
 export const getApplications = async () => {
   const response = await api.get("/applications/");
