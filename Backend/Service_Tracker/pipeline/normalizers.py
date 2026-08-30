@@ -11,7 +11,7 @@ class NoticeNormalizer:
 
     @classmethod
 
-    def normalize_and_save(cls, raw_payload):
+    def normalize_and_save(cls, raw_payload: dict) -> bool:
         try:
             # Structural Validation
             missing_fields = cls.REQUIRED_FIELDS - set(raw_payload.keys())
@@ -53,7 +53,6 @@ class NoticeNormalizer:
                     "service_type": service_type,
                     "deadline": deadline_dt,
                     "requirements": requirements,
-                    "updated_at": datetime.utcnow()
                 }
             )
             
