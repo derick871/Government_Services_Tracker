@@ -10,12 +10,14 @@ class CountyNotice(models.Model):
         LAND_RATES = "LAND_RATES", "Land Rates"
         BURSARY = "BURSARY", "Bursary"
         HEALTH_CERT = "HEALTH_CERT", "Health Certificate"
+        OTHERS = "OTHER", "Other"
 
     county_id = models.CharField(max_length=50, db_index=True)
     service_type = models.CharField(
         max_length=30,
         choices=ServiceType.choices,
         db_index=True,
+        default= ServiceType.OTHER,
     )
     title = models.CharField(max_length=255)
     requirements = models.JSONField(default=list)
@@ -27,7 +29,7 @@ class CountyNotice(models.Model):
         ordering = ["-scraped_at"]
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.county_id})"
 
 
 class Application(models.Model):
