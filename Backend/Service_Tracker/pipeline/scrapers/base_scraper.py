@@ -27,6 +27,17 @@ class BaseScrapper(ABC):
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1"
         }
+
+    def fetch_html(self, url: str) -> str | None:
+        """Safely fetch target web page content with standardized headers and error handling."""
+        try:
+            response = self.session.get(url, headers=self._get_headers(), timeout=15)
+            response.raise_for_status()
+            return response.text
+        except requests.RequestException as e:
+            logging.error("Network error fetching target URL %s: %s", url, str(e))
+            return None
+        
     @abstractmethod
     def scrape(self)->list[dict]:
         """Subclasses must implement extraction logic returning dictionaries."""
