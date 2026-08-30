@@ -1,3 +1,4 @@
+import api from "./api"
 //Fetch all avilable govt services
 export const getServices = async () => {
   const responce = await api.get("/services/");

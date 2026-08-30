@@ -1,59 +1,56 @@
 import axios from "axios";
 
-const Client = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "http://127.0.0.1:8000/api",
-
-  timeout: 10000,
-
+// Standardized Axios instance configuration for the backend
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Attach JWT
-Client.interceptors.request.use(
-  (config) => {
-    const token =
-      localStorage.getItem("access_token");
-
-    if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`;
-    }
-
-    return config;
+// Automatically inject JWT tokens if available in local storage
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+}, (error) => Promise.reject(error));
 
-// Return response data
-Client.interceptors.response.use(
-  (response) => response.data,
+// Fetch all available published county services/notices
+export const getServices = async () => {
+  const response = await api.get("/services/");
+  return response.data;
+};
 
-  (error) => {
-    const status = error.response?.status;
+// Get all citizen applications (supports admin/officer scopes securely)
+export const getApplications = async () => {
+  const response = await api.get("/applications/");
+  return response.data;
+};
 
-    if (status === 401) {
-      localStorage.removeItem(
-        "access_token"
-      );
+// Get a single application by its unique tracking code
+export const getApplication = async (trackingNumber) => {
+  const response = await api.get(`/applications/${trackingNumber}/`);
+  return response.data;
+};
 
-      localStorage.removeItem(
-        "refresh_token"
-      );
+// Alias to match component expectation
+export const getApplicationByTrackingNumber = getApplication;
 
-      window.location.href = "/login";
-    }
+// Submit a new citizen service request payload
+export const createApplication = async (data) => {
+  const response = await api.post("/applications/", data);
+  return response.data;
+};
 
-    return Promise.reject({
-      status: status || 500,
-      message:
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
-        "Unable to communicate with the server.",
-    });
-  }
-);
+// Update workflow lifecycle status (Restricted to officers/admins)
+export const updateApplicationStatus = async (applicationId, status, comment = "") => {
+  const response = await api.patch(`/applications/${applicationId}/status/`, {
+    status,
+    comment,
+  });
+  return response.data;
+};
 
 export default Client;
