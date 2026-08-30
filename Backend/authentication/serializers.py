@@ -1,8 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import (
-    TokenObtainPairSerializer
-)
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -11,29 +9,23 @@ User = get_user_model()
 # JWT LOGIN SERIALIZER
 # ============================================================
 
-class CustomTokenObtainPairSerializer(
-    TokenObtainPairSerializer
-):
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
-    Authenticate users using email/password and
-    add RBAC information to the JWT.
+    Authenticate users using email/password and inject custom 
+    RBAC authorization context parameters into the JWT payload.
     """
 
     @classmethod
     def get_token(cls, user):
-
         token = super().get_token(user)
 
         token["email"] = user.email
         token["role"] = user.role
-        token["county_code"] = (
-            user.county_code or "GLOBAL"
-        )
+        token["county_code"] = user.county_code or "GLOBAL"
 
         return token
 
     def validate(self, attrs):
-
         data = super().validate(attrs)
 
         data["user"] = {
@@ -54,28 +46,21 @@ class CustomTokenObtainPairSerializer(
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
-    Handles public citizen registration.
+    Validates and processes public citizen registration payloads.
     """
 
     password = serializers.CharField(
         write_only=True,
         min_length=8,
-        style={
-            "input_type": "password"
-        }
+        style={"input_type": "password"}
     )
-
     password_confirm = serializers.CharField(
         write_only=True,
-        style={
-            "input_type": "password"
-        }
+        style={"input_type": "password"}
     )
 
     class Meta:
-
         model = User
-
         fields = [
             "id",
             "email",
@@ -86,55 +71,30 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "phone_number",
             "county_code",
         ]
-
         read_only_fields = ["id"]
 
-    # --------------------------------------------------------
-    # EMAIL VALIDATION
-    # --------------------------------------------------------
-
     def validate_email(self, value):
-
-        value = value.lower().strip()
-
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "An account with this email already exists."
-            )
-
-        return value
-
-    # --------------------------------------------------------
-    # PASSWORD VALIDATION
-    # --------------------------------------------------------
+        """Ensure email normalization and unique constraint checking."""
+        email_normalized = value.lower().strip()
+        if User.objects.filter(email=email_normalized).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return email_normalized
 
     def validate(self, attrs):
-
-        password = attrs.get("password")
-        password_confirm = attrs.get(
-            "password_confirm"
-        )
-
-        if password != password_confirm:
+        """Cross-field validation checking matching password contracts."""
+        if attrs.get("password") != attrs.get("password_confirm"):
             raise serializers.ValidationError({
-                "password_confirm":
-                    "Passwords do not match."
+                "password_confirm": "Passwords do not match."
             })
-
         return attrs
 
-    # --------------------------------------------------------
-    # CREATE USER
-    # --------------------------------------------------------
-
     def create(self, validated_data):
-
-        validated_data.pop("password_confirm")
-
+        """Instantiate user profile cleanly via custom manager bindings."""
+        validated_data.pop("password_confirm", None)
         password = validated_data.pop("password")
-
-        # Public registration always creates a citizen.
-        validated_data["role"] = "CITIZEN"
+        
+        # Enforce strict public default role context
+        validated_data["role"] = User.Role.CITIZEN
 
         return User.objects.create_user(
             password=password,
