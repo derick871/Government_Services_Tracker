@@ -232,8 +232,8 @@ function MetricCard({ title, value, type = "info" }) {
         ${typeStyles[type]}
       `}
     >
-      <p className="text-sm font-medium text-slate-500">{title}</p>
-      <p className="mt-2 text-3xl font-bold text-slate-900">
+      <p className="text-sm font-medium text-gray-500">{title}</p>
+      <p className="mt-2 text-3xl font-bold text-gray-900">
         {Number(value || 0).toLocaleString()}
       </p>
     </div>
@@ -260,7 +260,7 @@ function StatusBadge({ status }) {
         py-1
         text-xs
         font-semibold
-        ${styles[status] || "bg-slate-100 text-slate-600"}
+        ${styles[status] || "bg-white text-gray-500"}
       `}
     >
       {status ? status.replaceAll("_", " ") : "UNKNOWN"}
