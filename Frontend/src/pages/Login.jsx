@@ -116,7 +116,7 @@ export default function Login() {
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                 required
               />
 
@@ -139,7 +139,7 @@ export default function Login() {
                 placeholder="Enter your password"
                 value={form.password}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                 required
               />
 
