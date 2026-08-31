@@ -130,7 +130,7 @@ export default function Register() {
                   placeholder="First name"
                   value={form.firstName}
                   onChange={handleChange}
-                  className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                   required
                 />
               </div>
@@ -150,7 +150,7 @@ export default function Register() {
                   placeholder="Last name"
                   value={form.lastName}
                   onChange={handleChange}
-                  className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                   required
                 />
               </div>
@@ -174,7 +174,7 @@ export default function Register() {
                 placeholder="citizen@example.com"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                 required
               />
 
@@ -197,7 +197,7 @@ export default function Register() {
                 placeholder="+254*******"
                 value={form.phoneNumber}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
               />
 
             </div>
@@ -217,7 +217,7 @@ export default function Register() {
                 name="countyCode"
                 value={form.countyCode}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 bg-white p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                 required
               >
                 <option value="">
@@ -267,7 +267,7 @@ export default function Register() {
                 placeholder="Create a password"
                 value={form.password}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                 required
                 minLength={8}
               />
@@ -291,7 +291,7 @@ export default function Register() {
                 placeholder="Confirm your password"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
                 required
                 minLength={8}
               />
