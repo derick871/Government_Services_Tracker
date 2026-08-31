@@ -118,7 +118,7 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="firstName"
-                  className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
                 >
                   First Name
                 </label>
@@ -138,7 +138,7 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="lastName"
-                  className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
                 >
                   Last Name
                 </label>
@@ -162,7 +162,7 @@ export default function Register() {
 
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 Email Address
               </label>
@@ -185,7 +185,7 @@ export default function Register() {
 
               <label
                 htmlFor="phoneNumber"
-                className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 Phone Number
               </label>
@@ -207,7 +207,7 @@ export default function Register() {
 
               <label
                 htmlFor="countyCode"
-                className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 County
               </label>
@@ -255,7 +255,7 @@ export default function Register() {
 
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 Password
               </label>
@@ -279,7 +279,7 @@ export default function Register() {
 
               <label
                 htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 Confirm Password
               </label>
