@@ -156,19 +156,19 @@ export default function Dashboard() {
         {/* Application list */}
         <section className="rounded-xl bg-white p-6 shadow-sm border border-slate-200">
           <div className="mb-5">
-            <h2 className="text-xl font-bold text-slate-800">
+            <h2 className="text-xl font-bold text-gray-900">
               Recent Applications
             </h2>
           </div>
 
           {applications.length === 0 ? (
-            <p className="text-slate-500 py-4 text-center">
+            <p className="text-gray-500 py-4 text-center">
               You have no applications yet.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-700">
-                <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase text-xs tracking-wider">
+                <thead className="border-b border-slate-200 bg-white text-gray-600 uppercase text-xs tracking-wider">
                   <tr>
                     <th className="p-4">Tracking Number</th>
                     <th className="p-4">Service</th>
@@ -182,7 +182,7 @@ export default function Dashboard() {
                       key={application.id || application.tracking_number}
                       className="hover:bg-slate-50 transition-colors"
                     >
-                      <td className="p-4 font-medium text-slate-900">
+                      <td className="p-4 font-medium text-gray-900">
                         {application.tracking_number || "N/A"}
                       </td>
                       <td className="p-4">
