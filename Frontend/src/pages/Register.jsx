@@ -80,20 +80,20 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center bg-gov-navy px-4 py-10">
 
       <div className="w-full max-w-lg">
 
-        <div className="rounded-xl bg-slate-700 p-8 shadow-lg">
+        <div className="rounded-lg bg-white p-8 shadow-lg">
 
           {/* Header */}
           <div className="mb-8 text-center">
 
-            <h1 className="text-3xl font-bold text-amber-500">
+            <h1 className="text-3xl font-bold text-gray-900">
               Citizen Register
             </h1>
 
-            <p className="mt-2 text-sm text-white">
+            <p className="mt-2 text-sm text-gray-500">
               Create your County Service Tracker account
             </p>
 
