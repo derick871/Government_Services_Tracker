@@ -66,21 +66,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
 
       <div className="w-full max-w-md">
 
         {/* Card */}
-        <div className="bg-slate-700 rounded-xl shadow-lg p-8">
+        <div className="bg-white rounded-xl shadow-lg p-8">
 
           {/* Header */}
           <div className="text-center mb-8">
 
-            <h1 className="text-3xl font-bold text-amber-500">
+            <h1 className="text-3xl font-bold text-gray-900">
               Citizen Login
             </h1>
 
-            <p className="mt-2 text-sm text-white">
+            <p className="mt-2 text-sm text-gray-500">
               Sign in to access your county services
             </p>
 
@@ -161,7 +161,7 @@ export default function Login() {
           {/* Register */}
           <div className="mt-6 text-center">
 
-            <p className="text-sm text-white">
+            <p className="text-sm text-gray-500">
               Don't have an account?{" "}
 
               <button
