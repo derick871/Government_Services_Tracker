@@ -121,15 +121,15 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
+    <main className="min-h-screen bg-white p-6">
       <div className="mx-auto max-w-7xl space-y-8">
 
         {/* Welcome banner */}
-        <section className="rounded-xl bg-slate-800 p-6 shadow-sm border border-slate-700">
-          <h1 className="text-3xl font-bold text-amber-400">
+        <section className="rounded-xl bg-white p-6 shadow-sm border border-slate-700">
+          <h1 className="text-3xl font-bold text-gray-900">
             Citizen Dashboard
           </h1>
-          <p className="mt-2 text-slate-300">
+          <p className="mt-2 text-gray-00">
             Welcome back to your County Portal. Manage your services cleanly online.
           </p>
         </section>
@@ -137,10 +137,10 @@ export default function Dashboard() {
         {/* Metrics */}
         <section>
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-slate-800">
+            <h2 className="text-xl font-bold text-gray-800">
               Application Statistics
             </h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-gray-600">
               Overview of your submitted county services.
             </p>
           </div>
