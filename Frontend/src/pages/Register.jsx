@@ -240,7 +240,7 @@ export default function Register() {
                 <option value="KE-COUNTY-032">
                   Busia
                 </option>
-                <option value="KE-COUNTY-037">
+                <option value="KE-COUNTY-014">
                   Kajiado
                 </option>
                 <option value="KE-COUNTY-002">
