@@ -302,7 +302,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-amber-500 p-3 font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-blue-500 p-3 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading
                 ? "Creating account..."
@@ -314,7 +314,7 @@ export default function Register() {
           {/* Login link */}
           <div className="mt-6 text-center">
 
-            <p className="text-sm text-white">
+            <p className="text-sm text-gray-500">
               Already have an account?{" "}
 
               <button
