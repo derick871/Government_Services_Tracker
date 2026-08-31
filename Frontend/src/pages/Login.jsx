@@ -104,7 +104,7 @@ export default function Login() {
 
               <label
                 htmlFor="email"
-                className="block mb-2 text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 Email Address
               </label>
@@ -127,7 +127,7 @@ export default function Login() {
 
               <label
                 htmlFor="password"
-                className="block mb-2 text-sm font-medium text-white"
+                  className="mb-2 block text-sm font-medium text-gray-500"
               >
                 Password
               </label>
