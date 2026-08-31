@@ -15,7 +15,7 @@ import {
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(
+  const [user, setUser] = useState(() =>
     getCurrentUser()
   );
 
@@ -23,8 +23,17 @@ export function AuthProvider({ children }) {
 
   // Restore session
   useEffect(() => {
-    setUser(getCurrentUser());
-    setLoading(false);
+    try {
+      const storedUser = getCurrentUser();
+      if (storedUser) {
+        setUser(storedUser);
+      }
+    } catch (err) {
+      console.error("Failed to restore user session:", err);
+      logout();
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const signIn = async (credentials) => {
