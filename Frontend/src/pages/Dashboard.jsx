@@ -103,7 +103,7 @@ export default function Dashboard() {
   // Error state
   if (error) {
     return (
-      <main className="min-h-screen bg-slate-900 p-6 flex items-center justify-center">
+      <main className="min-h-screen bg-white p-6 flex items-center justify-center">
         <div className="mx-auto max-w-lg w-full">
           <div className="rounded-lg border border-red-200 bg-red-50 p-6 shadow-md text-red-700">
             <h2 className="font-bold text-lg mb-2">Unable to load dashboard</h2>
