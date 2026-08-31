@@ -90,9 +90,9 @@ export default function Dashboard() {
   // Loading state
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-900 p-6 flex items-center justify-center">
+      <main className="min-h-screen bg-white p-6 flex items-center justify-center">
         <div className="mx-auto max-w-7xl">
-          <p className="text-amber-500 animate-pulse text-lg font-medium">
+          <p className="text-gray-500 animate-pulse text-lg font-medium">
             Loading dashboard data...
           </p>
         </div>
