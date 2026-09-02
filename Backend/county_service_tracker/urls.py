@@ -28,7 +28,7 @@ urlpatterns = [
     ),
 
 
-        path('api/payments/', include('payments.urls'))
+        path('api/payments/', include('Payments.urls'))
 
 
    
