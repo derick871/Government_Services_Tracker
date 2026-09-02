@@ -27,5 +27,9 @@ urlpatterns = [
         include("Service_Tracker.urls"),
     ),
 
+
+        path('api/payments/', include('payments.urls'))
+
+
    
 ]
