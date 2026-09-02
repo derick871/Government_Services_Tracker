@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render
 import base64, json, requests
 from django.conf import settings
@@ -10,6 +11,8 @@ from.utils.pdf_generator import generate_payment_pdf
 from.utils.mpesa import get_mpesa_token, stk_push
 
 # Create your views here.
+logger= logging.getLogger(__name__)
+
 class InitiatePaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -21,7 +24,7 @@ class InitiatePaymentView(APIView):
         if not phone or not amount:
             return Response({"detail": "phone and amount required"},status=400)
 
-        Payment= payment.objects.create(
+        Payment_obj= Payment.objects.create(
             user= request.user,
 
             phone_number= phone,
@@ -33,16 +36,16 @@ class InitiatePaymentView(APIView):
                 # 3. Initiate Daraja STK Push
         try:
             response = stk_push(phone, amount, tracking)
-            payment.checkout_request_id = response.get('CheckoutRequestID')
-            payment.save()
+            Payment_obj.checkout_request_id = response.get('CheckoutRequestID')
+            Payment_obj.save()
             return Response({
                 "message": "STK Push sent",
-                "payment_id": payment.id,
-                "checkout_id": payment.checkout_request_id
+                "payment_id": Payment_obj.id,
+                "checkout_id": Payment_obj.checkout_request_id
             })
         except Exception as e:
-            payment.status = 'FAILED'
-            payment.save()
+            Payment_obj.status = 'FAILED'
+            Payment_obj.save()
             return Response({"detail": str(e)}, status=500)
 
 class MpesaCallbackView(APIView):
@@ -51,6 +54,10 @@ class MpesaCallbackView(APIView):
         result= data.get('Body',{}).get('stkCallback',{}) 
 
         checkout_id= result.get('checkoutRequestID') 
+
+        if not checkout_id:
+            logger.warning("P-pesa callback received without CheckoutRequesID")
+            return Response({"ResultCode": 1, "ResultDesc": "Invalid payload"})
 
         try:
             payment = Payment.objects.get(checkout_request_id=checkout_id)
@@ -64,7 +71,7 @@ class MpesaCallbackView(APIView):
                 generate_payment_pdf(payment)
             else:
                 payment.status = 'FAILED'
-                payment.save()
+                payment.save(update_field=['status'])
         except Payment.DoesNotExist:
             pass
 
