@@ -70,8 +70,18 @@ class MpesaCallbackView(APIView):
 
         return Response({"ResultCode": 0, "ResultDesc": "Accepted"})
 
- 
+class DownloadReceiptView(APIView):
+    permission_classes = [IsAuthenticated]
 
-
-
-        
+    def get(self, request, payment_id):
+        try:
+            payment = Payment.objects.get(id=payment_id, user=request.user, status='SUCCESS')
+            if not payment.pdf_receipt:
+                generate_payment_pdf(payment)
+            return FileResponse(
+                payment.pdf_receipt.open('rb'),
+                as_attachment=True,
+                filename=f"eCitizen_Receipt_{payment.tracking_number}.pdf"
+            )
+        except Payment.DoesNotExist:
+            return Response({"detail": "Receipt not found"}, status=404)
