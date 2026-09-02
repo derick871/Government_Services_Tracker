@@ -1,4 +1,5 @@
 import os
+import logging
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
@@ -7,6 +8,7 @@ from django.conf import settings
 from django.core.files 
 import File
 
+logger = logging.getLogger(__name__)
 def generate_payment_pdf(payment):
     filename = f"receipt_{payment.tracking_number}_{payment.id}.pdf"
     filepath = os.path.join(settings.MEDIA_ROOT, 'receipts', filename)
@@ -47,7 +49,10 @@ def generate_payment_pdf(payment):
     doc.build(story)
 
     # Save to model
+    filename = f"receipt_{payment.tracking_number}_{payment.id}.pdf"
     with open(filepath, 'rb') as f:
         payment.pdf_receipt.save(filename, File(f), save=True)
 
-    return filepath
+    return payment.pdf_receipt.name
+
+
