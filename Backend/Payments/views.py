@@ -45,6 +45,33 @@ class InitiatePaymentView(APIView):
             payment.save()
             return Response({"detail": str(e)}, status=500)
 
+class MpesaCallbackView(APIView):
+    def post(self, request):
+        data= request.data
+        result= data.get('Body',{}).get('stkCallback',{}) 
+
+        checkout_id= result.get('checkoutRequestID') 
+
+        try:
+            payment = Payment.objects.get(checkout_request_id=checkout_id)
+            if result.get('ResultCode') == 0:
+                metadata = result.get('CallbackMetadata', {}).get('Item', [])
+                receipt = next((i['Value'] for i in metadata if i['Name'] == 'MpesaReceiptNumber'), '')
+                payment.mpesa_receipt = receipt
+                payment.status = 'SUCCESS'
+                payment.save()
+                # Generate PDF
+                generate_payment_pdf(payment)
+            else:
+                payment.status = 'FAILED'
+                payment.save()
+        except Payment.DoesNotExist:
+            pass
+
+        return Response({"ResultCode": 0, "ResultDesc": "Accepted"})
+
+ 
+
 
 
         
