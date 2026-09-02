@@ -30,4 +30,21 @@ class InitiatePaymentView(APIView):
             status= 'PENDING'
         )
 
+                # 3. Initiate Daraja STK Push
+        try:
+            response = stk_push(phone, amount, tracking)
+            payment.checkout_request_id = response.get('CheckoutRequestID')
+            payment.save()
+            return Response({
+                "message": "STK Push sent",
+                "payment_id": payment.id,
+                "checkout_id": payment.checkout_request_id
+            })
+        except Exception as e:
+            payment.status = 'FAILED'
+            payment.save()
+            return Response({"detail": str(e)}, status=500)
+
+
+
         
