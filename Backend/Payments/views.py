@@ -73,7 +73,10 @@ class MpesaCallbackView(APIView):
                 payment.status = 'FAILED'
                 payment.save(update_field=['status'])
         except Payment.DoesNotExist:
-            pass
+            logger.error(f"Payment with CheckoutRequestID {checkout_id} not found during callback.")
+        except Exception as e:
+            logger.error(f"Error processing M-Pesa callback: {str(e)}")
+            
 
         return Response({"ResultCode": 0, "ResultDesc": "Accepted"})
 
