@@ -17,3 +17,17 @@ class InitiatePaymentView(APIView):
         phone = request.data.get('phone_number')
         amount = request.data.get('amount')
         tracking = request.data.get('tracking_number')
+
+        if not phone or not amount:
+            return Response({"detail": "phone and amount required"},status=400)
+
+        Payment= payment.objects.create(
+            user= request.user,
+
+            phone_number= phone,
+            amount= amount,
+            tracking_number= tracking,
+            status= 'PENDING'
+        )
+
+        
