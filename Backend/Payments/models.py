@@ -8,7 +8,7 @@ class payment(models.Model):
         ('SUCCESS', 'success'),
         ('FAILED', 'failed')
     ]
-    user= models.ForeignKey(settings.AUTH_USER_MODEL, on_delete= models.CASCADE)
+    user= models.ForeignKey(Settings.AUTH_USER_MODEL, on_delete= models.CASCADE)
     tracking_number= models.CharField(max_length=50)
 
     phone_number= models.CharField(max_length=15)
