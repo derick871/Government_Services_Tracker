@@ -21,6 +21,14 @@ const PaymentPage= () => {
     const validatePhone=(phone)=> /^2547\d{8}$/.test(phone);
     const handlePay = async (e) => {
         e.preventDefault();
-        
+        if (!validatePhone(form.phone)){
+            toast.error("Enter safaricom number as 2547*******")
+            return;
+        }
+        if (form.pin.length !==4){
+            toast.error("Enter a 4 digit PIN")
+            return;
+        }
+
     }
 }
