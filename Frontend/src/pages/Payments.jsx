@@ -30,5 +30,63 @@ const PaymentPage= () => {
             return;
         }
 
+        setLoading(true);
+    try {
+      // 1. Initiate STK Push
+      const res = await apiClient.post("/payments/initiate/", {
+        phone_number: form.phone,
+        amount: form.amount,
+        tracking_number: tracking,
+        application_id: state?.application_id,
+      });
+
+      toast.success("STK Push sent! Check your phone to enter M-Pesa PIN.");
+      setPaymentId(res.data.payment_id);
+
+      // 2. Poll for status every 3 seconds
+      const interval = setInterval(async () => {
+        const statusRes = await apiClient.get(`/payments/${res.data.payment_id}/status/`);
+        if (statusRes.data.status === "SUCCESS") {
+          clearInterval(interval);
+          setStep(2);
+          toast.success("Payment Successful!");
+          setLoading(false);
+        }
+        if (statusRes.data.status === "FAILED") {
+          clearInterval(interval);
+          toast.error("Payment failed or cancelled");
+          setLoading(false);
+        }
+      }, 3000);
+
+      // Stop polling after 2 mins
+      setTimeout(() => {
+        clearInterval(interval);
+        if (loading) setLoading(false);
+      }, 120000);
+
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Payment initiation failed");
+      setLoading(false);
     }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const res = await apiClient.get(`/payments/${paymentId}/receipt/`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `eCitizen_Receipt_${tracking}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("Receipt downloaded");
+    } catch {
+      toast.error("Failed to download receipt");
+    }
+  };
+
 }
