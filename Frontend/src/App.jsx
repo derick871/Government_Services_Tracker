@@ -12,7 +12,8 @@ import ServiceTracker from "./components/ServiceTracker";
 import MetricCard from "./components/dashboard/MetricCard";
 import EfficiencyTable from "./components/dashboard/EfficiencyTable";
 import ApplicationCard from "./components/tracking/ApplicationCard";
-import StatusTimeline from './components/tracking/StatusTimeline'
+import StatusTimeline from './components/tracking/StatusTimeline';
+import PaymentPage from "./pages/Payments";
 
 export default function App() {
   
@@ -33,6 +34,8 @@ export default function App() {
         <Route path="/efficiencytable" element={<EfficiencyTable/>} />
         <Route path="/applicationCard" element={<ApplicationCard/>} />
         <Route path="/statusTimeline" element={<StatusTimeline/>} />
+        <Route path="/paymentpage" element={<PaymentPage/>} />
+
 
 
       </Routes>
