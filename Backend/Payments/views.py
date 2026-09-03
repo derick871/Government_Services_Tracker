@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from.models import Payment
-from.utils.pdf_generator import generate_payment_pdf
+from.utils.pdfGenerator import generate_payment_pdf
 from.utils.mpesa import get_mpesa_token, stk_push
 
 # Create your views here.
