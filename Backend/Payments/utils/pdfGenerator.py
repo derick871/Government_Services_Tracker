@@ -5,8 +5,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from django.conf import settings
-from django.core.files 
-import File
+from django.core.files import File
 
 logger = logging.getLogger(__name__)
 def generate_payment_pdf(payment):
