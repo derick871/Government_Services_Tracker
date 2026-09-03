@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {useLocation, useNavigate} from 'react-router-dom';
 import api from "../components/Services/api";
-import toast from "react-hot-toast;"
+import toast from "react-hot-toast";
 
 const PaymentPage= () => {
     const {state}= useLocation();
