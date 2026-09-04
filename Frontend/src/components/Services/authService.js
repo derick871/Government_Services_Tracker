@@ -1,7 +1,17 @@
 import client from "./api";
+const TOKEN_KEY= "access_token";
+const REFRESH_KEY= "refresh_token";
+const USER_KEY= "user";
 
 export const login = async (credentials) => {
-  return client.post("/auth/login/", credentials);
+
+    const data= await client.post("auth/token/,credentials");
+
+    if (!data?.access || !data?.user){
+
+      throw new Error("Invalid login response: Missing access or user");
+    }
+    return data;
 };
 
 export const refreshToken = async (refresh) => {
