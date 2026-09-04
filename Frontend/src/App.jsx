@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Layout from "./components/common/Layout"
+import { AuthProvider } from "./context/AuthProvider";
 import Home from "./pages/Home";
 import Register from  "./pages/Register";
 import Login from "./pages/Login";
@@ -8,43 +9,29 @@ import Dashboard from "./pages/Dashboard";
 import ApplyService from "./pages/ApplyService";
 import AdminConsole from "./pages/AdminConsole";
 import TrackService from "./pages/TrackService"
-import ServiceTracker from "./components/ServiceTracker"; 
-import MetricCard from "./components/dashboard/MetricCard";
-import EfficiencyTable from "./components/dashboard/EfficiencyTable";
-import ApplicationCard from "./components/tracking/ApplicationCard";
-import StatusTimeline from './components/tracking/StatusTimeline';
 import PaymentPage from "./pages/Payments";
 
 export default function App() {
   
   return (
     <BrowserRouter>
-      <Routes>
-        {/*public pages - no layout */}
-        <Route element={<Layout />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/applyservice" element={< ApplyService />} />
-        <Route path="/adminconsole" element={<AdminConsole />} />
-        <Route path="/trackservice" element={<TrackService />} />
-        <Route path="/servicetracker" element={<ServiceTracker/>} />
-        <Route path="/metriccard" element={<MetricCard/>} />
-        <Route path="/efficiencytable" element={<EfficiencyTable/>} />
-        <Route path="/applicationCard" element={<ApplicationCard/>} />
-        <Route path="/statusTimeline" element={<StatusTimeline/>} />
-        <Route path="/paymentpage" element={<PaymentPage/>} />
+      <AuthProvider>
+        <Routes>
+          {/* Routes wrapped with the common Layout */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/applyservice" element={<ApplyService />} />
+            <Route path="/adminconsole" element={<AdminConsole />} />
+            <Route path="/trackservice" element={<TrackService />} />
+            <Route path="/paymentpage" element={<PaymentPage />} />
+          </Route>
 
-
-
-      </Routes>
+          {/* Standalone pages without the layout (e.g., Auth screens) */}
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-100">
-      <ServiceTracker /> 
-    </div>
   );
 }
