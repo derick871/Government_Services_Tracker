@@ -68,6 +68,10 @@ class Application(models.Model):
     payload_data = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    role= models.CharField(max_length= 20,
+    choices=[("ADMIN", 'admini'), ...]),
+    default='CITIZEN'
 
     class Meta:
         ordering = ["-updated_at"]
