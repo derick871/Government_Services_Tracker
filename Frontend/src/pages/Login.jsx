@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth"
 
 import {
   login,
@@ -7,6 +8,8 @@ import {
 } from '../components/auth'
 
 export default function Login() {
+  const{signIn} = useAuth();
+
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -39,27 +42,19 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await login(form);
-
-      // Save JWT and user information
-      saveSession(response);
-
-      const user = response.user;
+      const data = await signIn(form); // signIn already does saveSession + setUser
+      const role = data?.user?.role;
 
       // Redirect based on role
-      if (user.role === "ADMIN") {
-        navigate("/admin");
-      } else if (user.role === "OFFICER") {
-        navigate("/officer");
-      } else {
-        navigate("/dashboard");
-      }
+      if (!role) throw new Error("No role returned from server");
 
-    } catch (error) {
-      setError(
-        error.message ||
-        "Login failed. Please check your credentials."
-      );
+      if (role === "ADMIN") navigate("/admin");
+      else if (role === "OFFICER") navigate("/officer");
+      else navigate("/dashboard");
+
+
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || "Login failed");
     } finally {
       setLoading(false);
     }
