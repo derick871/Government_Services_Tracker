@@ -15,9 +15,19 @@ export const login = async (credentials) => {
 };
 
 export const refreshToken = async (refresh) => {
-  return client.post("/auth/refresh/", {
-    refresh,
-  });
+  const refresh= localStorage.getItem(REFRESH_key);
+
+  if (!refresh) throw new Error("No refresh token");
+
+  const { data } = await client.post("/auth/token/refresh/", { refresh });
+  localStorage.setItem(TOKEN_KEY, data.access);
+
+  if (data.refresh) {
+    localStorage.setItem(REFRESH_KEY, data.refresh);
+  }
+  return data;
+
+  
 };
 
 export const logout = () => {
@@ -39,16 +49,17 @@ export const isAuthenticated = () => {
 };
 
 export const saveSession = (data) => {
-  if (data.access) {
+  if (!data?.access || !data?.user){
+    throw new Error("cannot save sessions: Invalid data")
     localStorage.setItem(
-      "access_token",
+      "TKEN_KEY",
       data.access
     );
   }
 
   if (data.refresh) {
     localStorage.setItem(
-      "refresh_token",
+      "REFRESH_KEY",
       data.refresh
     );
   }
@@ -59,4 +70,11 @@ export const saveSession = (data) => {
       JSON.stringify(data.user)
     );
   }
+  localStorage.setItem(USER_KEY. JSON.stringify(data.user)); 
+}; 
+
+export const logout =() => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_KEY)
+    localStorage.removeItem(USER_KEY)
 };
