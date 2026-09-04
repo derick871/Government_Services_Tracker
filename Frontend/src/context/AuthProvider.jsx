@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { login as apiLogin, saveSession, logout as clearStorage, getCurrentUser, refreshToken } from "../components/Services/authService";
-import client from "../services/api";
+import client from "../components/Services/api";
 
 export const AuthContext = createContext(null);
 
