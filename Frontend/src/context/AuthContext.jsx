@@ -1,66 +1,63 @@
-import {
-  createContext,
-  useEffect,
-  useState,
-} from "react";
-
+import { createContext, useEffect, useState, useMemo, useCallback } from "react";
 import {
   login,
   saveSession,
   logout,
   getCurrentUser,
-  isAuthenticated,
 } from "../services/auth";
 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() =>
-    getCurrentUser()
-  );
-
+  const [user, setUser] = useState(() => getCurrentUser());
   const [loading, setLoading] = useState(true);
 
-  // Restore session
+  // Restore session once
   useEffect(() => {
     try {
-      const storedUser = getCurrentUser();
-      if (storedUser) {
-        setUser(storedUser);
-      }
-    } catch (err) {
-      console.error("Failed to restore user session:", err);
+      const stored = getCurrentUser();
+      if (stored) setUser(stored);
+    } catch {
       logout();
+      setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const signIn = async (credentials) => {
+  const signIn = useCallback(async (credentials) => {
     const data = await login(credentials);
+
+    if (!data?.user || !data?.access) {
+      throw new Error("Invalid login response from server");
+    }
 
     saveSession(data);
     setUser(data.user);
-
     return data;
-  };
+  }, []);
 
-  const signOut = () => {
+  const signOut = useCallback(() => {
     logout();
     setUser(null);
-  };
+  }, []);
 
-  const value = {
-    user,
-    loading,
-    isAuthenticated: isAuthenticated(),
-    signIn,
-    signOut,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      isAuthenticated: !!user,
+      role: user?.role || null,
+      countyCode: user?.county_code || null,
+      signIn,
+      signOut,
+    }),
+    [user, loading, signIn, signOut]
+  );
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading ? children : null}
     </AuthContext.Provider>
   );
 }
