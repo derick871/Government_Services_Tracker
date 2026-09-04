@@ -54,7 +54,7 @@ class User(AbstractUser):
     # Contact & Assignment metadata
     phone_number = models.CharField(max_length=15, blank=True, default="")
     county_code = models.CharField(
-        max_length=10,
+        max_length=50,
         blank=True,
         default="",
         help_text="County code assigned to county officers.",

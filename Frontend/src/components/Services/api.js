@@ -1,56 +1,102 @@
 import axios from "axios";
 
-// Standardized Axios instance configuration for the backend
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
+// Routes that should NEVER get an Authorization header
+const PUBLIC_ROUTES = ["/auth/register", "/auth/login", "/auth/token", "/services"];
+
 const Client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  timeout: 15000,
 });
 
-// Automatically inject JWT tokens if available in local storage
-Client.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+// --- Request Interceptor ---
+Client.interceptors.request.use(
+  (config) => {
+    const isPublic = PUBLIC_ROUTES.some((route) => config.url?.includes(route));
+    
+    if (!isPublic) {
+      const token = localStorage.getItem("access_token");
+      if (token && token !== "null" && token !== "undefined") {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        delete config.headers.Authorization;
+      }
+    } else {
+      delete config.headers.Authorization;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// Fetch all available published county services/notices
-export const getServices = async () => {
-  const response = await api.get("/services/");
-  return response.data;
-};
+// --- Response Interceptor: Auto-refresh + logout ---
+let isRefreshing = false;
+let failedQueue = [];
 
-// Get all citizen applications (supports admin/officer scopes securely)
-export const getApplications = async () => {
-  const response = await api.get("/applications/");
-  return response.data;
-};
-
-// Get a single application by its unique tracking code
-export const getApplication = async (trackingNumber) => {
-  const response = await api.get(`/applications/${trackingNumber}/`);
-  return response.data;
-};
-
-// Alias to match component expectation
-export const getApplicationByTrackingNumber = getApplication;
-
-// Submit a new citizen service request payload
-export const createApplication = async (data) => {
-  const response = await api.post("/applications/", data);
-  return response.data;
-};
-
-// Update workflow lifecycle status (Restricted to officers/admins)
-export const updateApplicationStatus = async (applicationId, status, comment = "") => {
-  const response = await api.patch(`/applications/${applicationId}/status/`, {
-    status,
-    comment,
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
   });
-  return response.data;
+  failedQueue = [];
 };
+
+Client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If 401 and not already retried, try refresh token
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return Client(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem("refresh_token");
+      if (!refreshToken) {
+        isRefreshing = false;
+        localStorage.clear();
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      try {
+        const { data } = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+          refresh: refreshToken,
+        });
+        localStorage.setItem("access_token", data.access);
+        Client.defaults.headers.common.Authorization = `Bearer ${data.access}`;
+        processQueue(null, data.access);
+        return Client(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        localStorage.clear();
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// --- API Methods ---
+export const getServices = () => Client.get("/services/").then((r) => r.data);
+export const getApplications = () => Client.get("/applications/").then((r) => r.data);
+export const getApplication = (trackingNumber) => Client.get(`/applications/${trackingNumber}/`).then((r) => r.data);
+export const getApplicationByTrackingNumber = getApplication;
+export const createApplication = (data) => Client.post("/applications/", data).then((r) => r.data);
+export const updateApplicationStatus = (id, status, comment = "") => Client.patch(`/applications/${id}/status/`, { status, comment }).then((r) => r.data);
 
 export default Client;
