@@ -4,7 +4,7 @@ import {
   saveSession,
   logout,
   getCurrentUser,
-} from "../services/auth";
+} from "../components/Services/authService";
 
 export const AuthContext = createContext(null);
 
