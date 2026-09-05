@@ -25,6 +25,8 @@ class LoginSerializer(TokenObtainPairSerializer):
 
         data = super().validate(attrs)
 
+        data["role"]= self.user.role
+
         data["user"] = {
             "id": self.user.id,
             "email": self.user.email,
