@@ -33,7 +33,7 @@ export default function PaymentPage() {
         setLoading(true);
     try {
       // 1. Initiate STK Push
-      const res = await apiClient.post("/payments/initiate/", {
+      const res = await api.post("/payments/initiate/", {
         phone_number: form.phone,
         amount: form.amount,
         tracking_number: tracking,
@@ -45,7 +45,7 @@ export default function PaymentPage() {
 
       // 2. Poll for status every 3 seconds
       const interval = setInterval(async () => {
-        const statusRes = await apiClient.get(`/payments/${res.data.payment_id}/status/`);
+        const statusRes = await api.get(`/payments/${res.data.payment_id}/status/`);
         if (statusRes.data.status === "SUCCESS") {
           clearInterval(interval);
           setStep(2);
@@ -73,7 +73,7 @@ export default function PaymentPage() {
 
   const handleDownload = async () => {
     try {
-      const res = await apiClient.get(`/payments/${paymentId}/receipt/`, {
+      const res = await api.get(`/payments/${paymentId}/receipt/`, {
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([res.data]));
