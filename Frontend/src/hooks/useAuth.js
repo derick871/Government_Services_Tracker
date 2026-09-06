@@ -9,4 +9,14 @@ export default function useAuth(requiredRoles = []) {
     throw new Error(`Unauthorized: requires ${requiredRoles.join(",")}`);
   }
   return context;
+
+  const signIn = async (credentials) => {
+  try {
+    const response = await client.post("/auth/token/", credentials);
+    
+    return response.data; 
+  } catch (error) {
+    throw error;
+  }
+ };
 }
