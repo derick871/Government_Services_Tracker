@@ -62,7 +62,7 @@ export default function PaymentPage() {
       // Stop polling after 2 mins
       setTimeout(() => {
         clearInterval(interval);
-        if (loading) setLoading(false);
+        setLoading((prev) => (prev ? false : prev));
       }, 120000);
 
     } catch (err) {
@@ -93,16 +93,24 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="bg-white max-w-md w-full p-8 rounded-2xl shadow-lg text-center">
-          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">✓</div>
+          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
+            ✓✓
+          </div>
           <h2 className="text-2xl font-bold text-gray-900">Payment Successful</h2>
-          <p className="text-gray-500 mt-2">Tracking No: <b>{tracking}</b></p>
-          <p className="text-gray-500">Amount: <b>KES {form.amount}</b></p>
+          <p className="text-gray-500 mt-2">Tracking No: <span className="font-bold">{tracking}</span></p>
+          <p className="text-gray-500">Amount: <span className="font-bold">KES {form.amount}</span></p>
 
           <div className="mt-6 flex flex-col gap-3">
-            <button onClick={handleDownload} className="w-full bg-[#0A1931] text-white py-3 rounded-lg font-semibold hover:bg-black transition">
+            <button 
+              onClick={handleDownload} 
+              className="w-full bg-[#0A1931] text-white py-3 rounded-lg font-semibold hover:bg-black transition"
+            >
               Download Receipt (PDF)
             </button>
-            <button onClick={() => navigate("/dashboard")} className="w-full border py-3 rounded-lg font-semibold">
+            <button 
+              onClick={() => navigate("/dashboard")} 
+              className="w-full border py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
+            >
               Go to Dashboard
             </button>
           </div>
@@ -124,28 +132,29 @@ export default function PaymentPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-semibold">M-Pesa Phone Number</label>
+            <label className="text-sm font-semibold text-gray-700">M-Pesa Phone Number</label>
             <input
               type="text"
               placeholder="2547XXXXXXXX"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="mt-1 w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0A1931] outline-none"
+              required
             />
           </div>
 
           <div>
-            <label className="text-sm font-semibold">Amount (KES)</label>
+            <label className="text-sm font-semibold text-gray-700">Amount (KES)</label>
             <input
               type="number"
               value={form.amount}
               readOnly
-              className="mt-1 w-full border rounded-lg px-4 py-3 bg-gray-100"
+              className="mt-1 w-full border rounded-lg px-4 py-3 bg-gray-100 text-gray-600 font-semibold cursor-not-allowed"
             />
           </div>
 
           <div>
-            <label className="text-sm font-semibold">eCitizen PIN (4-digit)</label>
+            <label className="text-sm font-semibold text-gray-700">eCitizen PIN (4-digit)</label>
             <input
               type="password"
               maxLength={4}
@@ -153,8 +162,9 @@ export default function PaymentPage() {
               value={form.pin}
               onChange={(e) => setForm({ ...form, pin: e.target.value.replace(/\D/g, "") })}
               className="mt-1 w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0A1931] outline-none tracking-[0.5em] text-center font-bold"
+              required
             />
-            <p className="text-xs text-gray-400 mt-1">This PIN is for verification only. Real M-Pesa PIN will be requested on your phone.</p>
+            <p className="text-xs text-gray-400 mt-1">This PIN is for internal verification. Real M-Pesa prompt will appear on your phone.</p>
           </div>
 
           <button
@@ -170,4 +180,5 @@ export default function PaymentPage() {
       </form>
     </div>
   );
-};
+}
+
