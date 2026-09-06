@@ -16,7 +16,10 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("access");
+        const token = 
+        localStorage.getItem("access") ||
+        localStorage.getItem("access_token") ||
+        localStorage.getItem("token");
 
         const response = await fetch(API_URL, {
           method: "GET",
