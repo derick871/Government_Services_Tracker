@@ -3,20 +3,20 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import api from "../components/Services/api";
 import toast from "react-hot-toast";
 
-const PaymentPage= () => {
+export default function PaymentPage() {
     const {state}= useLocation();
     const navigate= useNavigate();
-    const tracking = state?.tracking_number;
-    const initialAmaount= state.amount;
+    const tracking = state?.tracking_number || "";
+    const initialAmount= state?.amount || 0;
 
     const [form,setForm]= useState({
         phone: "",
         pin: "",
-        amount: "initialAmount",
+        amount: initialAmount,
     });
 
     const [loading, setLoading]= useState(False);
-    const [steps, setSteps]= useState(1);
+    const [step, setStep]= useState(1);
     const [paymentId, setPaymentId]= useState(null);
     const validatePhone=(phone)=> /^2547\d{8}$/.test(phone);
     const handlePay = async (e) => {
@@ -171,6 +171,3 @@ const PaymentPage= () => {
     </div>
   );
 };
-
-export default PaymentPage;
-
