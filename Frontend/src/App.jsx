@@ -17,9 +17,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Home />} />
           {/* Routes wrapped with the common Layout */}
           <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/applyservice" element={<ApplyService />} />
             <Route path="/adminconsole" element={<AdminConsole />} />
