@@ -16,7 +16,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Update form fields
+  // Update form fields dynamically
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -39,18 +39,23 @@ export default function Login() {
 
     try {
       const data = await signIn(form); // signIn already does saveSession + setUser
-      const role = data?.user?.role;
+      const role = data?.user?.role || data?.role || "CITIZEN";
 
       // Redirect based on role
       if (!role) throw new Error("No role returned from server");
 
-      if (role === "ADMIN") navigate("/admin");
-      else if (role === "OFFICER") navigate("/officer");
-      else navigate("/dashboard");
+      if (role === "ADMIN") {navigate("/admin");}
+      else if (role === "OFFICER") {navigate("/officer");}
+      else {navigate("/dashboard");}
 
 
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Login failed");
+      const errorMsg = 
+        err.response?.data?.detail || 
+        err.response?.data?.non_field_errors?.[0] || 
+        err.message || 
+        "Login failed. Please check your credentials.";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
