@@ -2,10 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth"
 
-import {
-  login,
-  saveSession,
-} from '../components/auth'
 
 export default function Login() {
   const{signIn} = useAuth();
