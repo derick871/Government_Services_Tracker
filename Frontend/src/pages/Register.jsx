@@ -56,7 +56,7 @@ export default function Register() {
       navigate("/login?registered=true");
 
     } catch (err) {
-      // Extract precise backend validation or fallback gracefully
+      // Extract precise backend validation 
       const responseData = err.response?.data;
       let message = "Registration failed. Please try again.";
 
@@ -330,6 +330,22 @@ export default function Register() {
 
         </div>
 
+      </div>
+
+      <div className="hidden lg:block relative bg-gray-900">
+        <img
+          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop"
+          alt="County Service Tracker background"
+          className="absolute inset-0 h-full w-full object-cover opacity-90"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-12">
+          <blockquote className="text-white">
+            <p className="text-xl font-medium">
+              &ldquo;Empowering citizens through transparent, fast, and accessible county services.&rdquo;
+            </p>
+            <footer className="mt-2 text-sm text-gray-300">County Service Tracker Portal</footer>
+          </blockquote>
+        </div>
       </div>
 
     </div>
