@@ -62,7 +62,6 @@ export default function Register() {
 
       if (responseData) {
         if (typeof responseData === "object") {
-          // Grab the first error key and value from Django's response dictionary
           const firstKey = Object.keys(responseData)[0];
           const firstError = responseData[firstKey];
           message = Array.isArray(firstError) ? firstError[0] : firstError;
@@ -80,23 +79,20 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gov-navy px-4 py-10">
-
-      <div className="w-full max-w-lg">
-
-        <div className="rounded-lg bg-white p-8 shadow-lg">
-
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+      
+      {/* Left Column: Form Section */}
+      <div className="flex items-center justify-center px-6 py-12 lg:px-12 overflow-y-auto">
+        <div className="w-full max-w-lg">
+          
           {/* Header */}
-          <div className="mb-8 text-center">
-
+          <div className="mb-6 text-center lg:text-left">
             <h1 className="text-3xl font-bold text-gray-900">
               Citizen Register
             </h1>
-
             <p className="mt-2 text-sm text-gray-500">
               Create your County Service Tracker account
             </p>
-
           </div>
 
           {/* Error */}
@@ -107,22 +103,17 @@ export default function Register() {
           )}
 
           {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Names */}
             <div className="grid gap-4 sm:grid-cols-2">
-
               <div>
                 <label
                   htmlFor="firstName"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                  className="mb-1 block text-sm font-medium text-gray-700"
                 >
                   First Name
                 </label>
-
                 <input
                   id="firstName"
                   name="firstName"
@@ -130,7 +121,7 @@ export default function Register() {
                   placeholder="First name"
                   value={form.firstName}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                   required
                 />
               </div>
@@ -138,11 +129,10 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="lastName"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                  className="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Last Name
                 </label>
-
                 <input
                   id="lastName"
                   name="lastName"
@@ -150,23 +140,20 @@ export default function Register() {
                   placeholder="Last name"
                   value={form.lastName}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                   required
                 />
               </div>
-
             </div>
 
             {/* Email */}
             <div>
-
               <label
                 htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 Email Address
               </label>
-
               <input
                 id="email"
                 name="email"
@@ -174,22 +161,19 @@ export default function Register() {
                 placeholder="citizen@example.com"
                 value={form.email}
                 onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                 required
               />
-
             </div>
 
             {/* Phone */}
             <div>
-
               <label
                 htmlFor="phoneNumber"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 Phone Number
               </label>
-
               <input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -197,69 +181,45 @@ export default function Register() {
                 placeholder="+254*******"
                 value={form.phoneNumber}
                 onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
               />
-
             </div>
             
             {/* County */}
             <div>
-
               <label
                 htmlFor="countyCode"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 County
               </label>
-
               <select
                 id="countyCode"
                 name="countyCode"
                 value={form.countyCode}
                 onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 bg-white"
                 required
               >
-                <option value="">
-                  Select your county
-                </option>
-
-                <option value="KE-COUNTY-001">
-                  Nairobi
-                </option>
-
-                <option value="KE-COUNTY-037">
-                  Kakamega
-                </option>
-                <option value="KE-COUNTY-027">
-                  Mandera
-                </option>
-                <option value="KE-COUNTY-034">
-                  Kilifi
-                </option>
-                <option value="KE-COUNTY-032">
-                  Busia
-                </option>
-                <option value="KE-COUNTY-014">
-                  Kajiado
-                </option>
-                <option value="KE-COUNTY-002">
-                  Mombasa
-                </option>
+                <option value="">Select your county</option>
+                <option value="KE-COUNTY-001">Nairobi</option>
+                <option value="KE-COUNTY-037">Kakamega</option>
+                <option value="KE-COUNTY-027">Mandera</option>
+                <option value="KE-COUNTY-034">Kilifi</option>
+                <option value="KE-COUNTY-032">Busia</option>
+                <option value="KE-COUNTY-014">Kajiado</option>
+                <option value="KE-COUNTY-002">Mombasa</option>
               </select>
-
             </div>
 
             {/* Password */}
             <div>
-
               <label
                 htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 Password
               </label>
-
               <input
                 id="password"
                 name="password"
@@ -267,23 +227,20 @@ export default function Register() {
                 placeholder="Create a password"
                 value={form.password}
                 onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                 required
                 minLength={8}
               />
-
             </div>
 
             {/* Confirm Password */}
             <div>
-
               <label
                 htmlFor="confirmPassword"
-                  className="mb-2 block text-sm font-medium text-gray-500"
+                className="mb-1 block text-sm font-medium text-gray-700"
               >
                 Confirm Password
               </label>
-
               <input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -291,32 +248,27 @@ export default function Register() {
                 placeholder="Confirm your password"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                  className="w-full rounded-lg border border-gov-border p-3 outline-none focus:border-gov-blue focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                 required
                 minLength={8}
               />
-
             </div>
 
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-blue-500 p-3 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-blue-600 p-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading
-                ? "Creating account..."
-                : "Create Account"}
+              {loading ? "Creating account..." : "Create Account"}
             </button>
 
           </form>
 
           {/* Login link */}
           <div className="mt-6 text-center">
-
             <p className="text-sm text-gray-500">
               Already have an account?{" "}
-
               <button
                 type="button"
                 onClick={() => navigate("/login")}
@@ -325,11 +277,9 @@ export default function Register() {
                 Login
               </button>
             </p>
-
           </div>
 
         </div>
-
       </div>
 
       <div className="hidden lg:block relative bg-gray-900">
