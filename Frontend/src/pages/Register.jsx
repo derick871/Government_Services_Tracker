@@ -258,7 +258,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-blue-600 p-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-[#0F4C75] text-white text-sm font-semibold transition hover:bg-[#123d5a] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? "Creating account..." : "Create Account"}
             </button>
