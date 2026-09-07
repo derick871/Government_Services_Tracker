@@ -15,7 +15,7 @@ export default function PaymentPage() {
         amount: initialAmount,
     });
 
-    const [loading, setLoading]= useState(False);
+    const [loading, setLoading]= useState("False");
     const [step, setStep]= useState(1);
     const [paymentId, setPaymentId]= useState(null);
     const validatePhone=(phone)=> /^2547\d{8}$/.test(phone);
