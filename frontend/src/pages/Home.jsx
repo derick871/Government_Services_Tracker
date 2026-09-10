@@ -105,7 +105,7 @@ export default function Home({ user }) {
             <ShieldCheck size={14} /> Official County Government Portal
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
-            County Service Tracker
+            County <span className='text-amber-500'>Service </span> Tracker
           </h1>
           <p className="text-lg text-slate-600">
             Access, apply, and monitor government services with complete transparency, speed, and reliability.
@@ -123,7 +123,7 @@ export default function Home({ user }) {
               <>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-md"
+                  className="inline-flex items-center gap-2 bg-blue-800 hover:bg-amber-500 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-md"
                 >
                   Sign In <ArrowRight size={18} />
                 </Link>
@@ -142,7 +142,7 @@ export default function Home({ user }) {
       {/* Core Services  (Permits, Health, Bursaries, Land) */}
       <section className="space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Available County Services</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Available County <span className='text-amber-500'>Service </span></h2>
           <p className="text-slate-600 max-w-xl mx-auto">
             Select a service category below to review documentation guidelines, learn more, or initiate your application.
           </p>
