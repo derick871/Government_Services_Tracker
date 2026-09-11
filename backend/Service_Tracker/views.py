@@ -122,3 +122,45 @@ class UpdateApplicationStatusView(generics.GenericAPIView):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+class UpdateApplicationStatusView(generics.GenericAPIView):
+    """Update application workflow status."""
+    serializer_class = ApplicationStatusSerializer
+    permission_classes = [IsOfficerOrAdmin]
+    queryset = Application.objects.all()
+
+    def patch(self, request, pk):
+        application = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        target_state = serializer.validated_data["status"]
+        comment = serializer.validated_data.get("comment", "")
+        
+        # Determine role (fallback to user model attribute or string representation)
+        user_role = getattr(request.user, "role", "ADMIN").upper()
+        current_state = application.status
+
+        try:
+            # Validate transition using your workflow transition rules engine
+            validate_transition(current_state, target_state, user_role)
+        except InvalidStateTransition as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update application state
+        application.status = target_state
+        application.save()
+
+        # Log state change for full traceability
+        StatusLog.objects.create(
+            application=application,
+            from_state=current_state,
+            to_state=target_state,
+            changed_by=request.user,
+            comment=comment
+        )
+
+        return Response(
+            ApplicationDetailSerializer(application).data,
+            status=status.HTTP_200_OK
+        ) 
