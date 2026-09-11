@@ -246,7 +246,7 @@ export default function ApplyService() {
           <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
             <ShieldCheck size={16} /> Official eCitizen-Style Portal
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">Departmental Service Application</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">Depart<span className="text-amber-500">mental</span>  Service <span className="text-amber-500">Application</span> </h1>
           <p className="text-sm text-slate-500 mt-1">Complete the digital form below customized for your selected county service.</p>
         </header>
 
@@ -331,13 +331,13 @@ export default function ApplyService() {
                 )}
 
                 <div>
-                  <label htmlFor="description" className="mb-2 block text-sm font-semibold text-slate-700">Additional Justification / Supporting Notes</label>
+                  <label htmlFor="description" className="mb-2 block text-sm font-semibold text-slate-700">Additional Information / Supporting Notes</label>
                   <textarea
                     id="description"
                     value={generalDescription}
                     onChange={(e) => setGeneralDescription(e.target.value)}
                     rows={4}
-                    placeholder="Provide any additional comments, instructions, or supporting particulars..."
+                    placeholder="Provide any additional information/instructions"
                     className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all"
                   />
                 </div>
