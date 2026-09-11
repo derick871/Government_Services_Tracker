@@ -11,14 +11,36 @@ const Client = axios.create({
   timeout: 15000,
 });
 
+/*
+ * preventing "[object Object]" or malformed JSON payloads from corrupting headers.
+ */
+const getValidToken = (key) => {
+  let token = localStorage.getItem(key);
+  if (!token || token === "null" || token === "undefined" || token.includes("object Object")) {
+    return null;
+  }
+
+  // If it was saved as a JSON string (e.g. JSON.stringify({ access: "..." }))
+  if (token.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(token);
+      return parsed.access || parsed.access_token || parsed.token || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  return token;
+};
+
 // --- Request Interceptor ---
 Client.interceptors.request.use(
   (config) => {
     const isPublic = PUBLIC_ROUTES.some((route) => config.url?.includes(route));
     
     if (!isPublic) {
-      const token = localStorage.getItem("access_token");
-      if (token && token !== "null" && token !== "undefined") {
+      const token = getValidToken("access_token");
+      if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       } else {
         delete config.headers.Authorization;
@@ -62,7 +84,7 @@ Client.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refresh_token");
+      const refreshToken = getValidToken("refresh_token");
       if (!refreshToken) {
         isRefreshing = false;
         localStorage.clear();
