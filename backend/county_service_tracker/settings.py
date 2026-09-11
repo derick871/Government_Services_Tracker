@@ -212,11 +212,12 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # mpesa keys
-MPESA_CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY")
-MPESA_CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET")
-MPESA_SHORTCODE = "174379"
+MPESA_ENV = "sandbox"
+MPESA_BASE_URL = "https://sandbox.safaricom.co.ke"
+MPESA_SHORTCODE = "174379"  # Paybill or Till Number (BuyGoods/PayBill)
+MPESA_CONSUMER_KEY = "LKaM6gdg1h2wArcpDsgzYE10RSFRhazGQvG81ho21aPrQI24"
+MPESA_CONSUMER_SECRET = "YOUR_CONSUMER_SECRET_HERE" 
 MPESA_PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
-MPESA_CALLBACK_URL = "https://yourdomain.com/api/payments/callback/"
-
+MPESA_CALLBACK_URL = "https://your-ngrok-url.ngrok-free.app/api/payments/callback/"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
