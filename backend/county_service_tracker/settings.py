@@ -17,7 +17,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', config('DJANGO_SECRET_KEY', default='django-insecure-*a^dt=*n%w$tk54hvx$(*m(0&0n#79k#^&$=!+2klj^&+62obw'))
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
@@ -27,7 +27,9 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 
 ALLOWED_HOSTS = [
     'localhost',
+    'government-services-tracker.vercel.app',
     '127.0.0.1',
+
     '.onrender.com',  # Matches any Render app domain
 ]
 if RENDER_EXTERNAL_HOSTNAME:
@@ -140,7 +142,10 @@ else:
 CSRF_TRUSTED_ORIGINS = [
     f"https://{RENDER_EXTERNAL_HOSTNAME}" if RENDER_EXTERNAL_HOSTNAME else "http://localhost:5173",
     "https://*.onrender.com",
-    "https://government-services-tracker-23.onrender.com",]
+    "https://government-services-tracker-23.onrender.com",
+    "https://government-services-tracker.vercel.app",
+    ]
+
 
 
 # Django REST Framework & OpenAPI Documentation Settings
@@ -212,12 +217,12 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # mpesa keys
-MPESA_ENV = "sandbox"
-MPESA_BASE_URL = "https://sandbox.safaricom.co.ke"
-MPESA_SHORTCODE = "174379"  # Paybill or Till Number (BuyGoods/PayBill)
-MPESA_CONSUMER_KEY = "LKaM6gdg1h2wArcpDsgzYE10RSFRhazGQvG81ho21aPrQI24"
-MPESA_CONSUMER_SECRET = "YOUR_CONSUMER_SECRET_HERE" 
-MPESA_PASSKEY = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
-MPESA_CALLBACK_URL = "https://your-ngrok-url.ngrok-free.app/api/payments/callback/"
+MPESA_ENV = config("MPESA_ENV")
+MPESA_SHORTCODE = config("MPESA_B2C_SHORTCODE")
+MPESA_CONSUMER_KEY = config("MPESA_CUSTOMER_KEY")
+MPESA_CONSUMER_SECRET = config("MPESA_B2C_SECURITY_CREDENTIAL") 
+MPESA_PASSKEY = config("MPESA_PASSKEY")
+MPESA_CALLBACK_URL = config("MPESA_CALLBACK_URL")
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

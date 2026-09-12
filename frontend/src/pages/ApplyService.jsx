@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ShieldCheck, ArrowLeft, Send } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem("access") || localStorage.getItem("access_token") || localStorage.getItem("token");
+  // const token = localStorage.getItem("access") || localStorage.getItem("access_token") || localStorage.getItem("token");
   return {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),

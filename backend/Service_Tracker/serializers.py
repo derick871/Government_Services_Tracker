@@ -22,7 +22,6 @@ class StatusLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusLog
         fields = (
-            "id",
             "from_state",
             "to_state",
             "changed_by",
@@ -30,16 +29,16 @@ class StatusLogSerializer(serializers.ModelSerializer):
             "timestamp",
         )
 
-    def get_changed_by(self, obj):
-        if obj.changed_by:
-            return obj.changed_by.email
-        return None
+    # def get_changed_by(self, obj):
+    #     if obj.changed_by:
+    #         return obj.changed_by.email
+    #     return None
 
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):
     """Create a new application by referencing a CountyNotice service ID."""
 
-    service_id = serializers.IntegerField(write_only=True)
+    service_id = serializers.IntegerField(write_only=True, required= True)
 
     class Meta:
         model = Application
@@ -63,13 +62,11 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         service_id = attrs.pop("service_id", None)
         
         try:
-            notice = CountyNotice.objects.get(id=service_id)
-            # Automatically populate metadata from the verified notice
-            attrs["service_type"] = notice.service_type
+            notice = CountyNotice.objects.get(id=attrs.pop("service_id"))
             attrs["county_id"] = notice.county_id
+            attrs["service_type"] = notice.service_type
         except CountyNotice.DoesNotExist:
-            raise serializers.ValidationError({"service_id": "Invalid or inactive government service ID."})
-            
+            raise serializers.ValidationError({"service_id": "Invalid service. Refresh service list."})
         return attrs
 
     def create(self, validated_data):
@@ -81,6 +78,8 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
 class ApplicationListSerializer(serializers.ModelSerializer):
     """Application summary for dashboards."""
 
+    title = serializers.CharField(source= "get_services_type_display,read_only= True")
+
     class Meta:
         model = Application
         fields = (
@@ -90,14 +89,13 @@ class ApplicationListSerializer(serializers.ModelSerializer):
             "county_id",
             "status",
             "created_at",
-            "updated_at",
         )
 
 
 class ApplicationDetailSerializer(serializers.ModelSerializer):
     """Detailed application view."""
 
-    citizen = serializers.StringRelatedField()
+    # citizen = serializers.StringRelatedField()
     logs = StatusLogSerializer(many=True, read_only=True)
     allowed_actions = serializers.SerializerMethodField()
 
@@ -106,13 +104,13 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "tracking_number",
-            "citizen",
+            # "citizen",
             "county_id",
             "service_type",
             "status",
             "payload_data",
             "created_at",
-            "updated_at",
+            # "updated_at",
             "allowed_actions",
             "logs",
         )
