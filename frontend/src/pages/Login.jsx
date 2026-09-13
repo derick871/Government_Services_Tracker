@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
-import loginBg from "../assets/login-bg.png"
+import loginBg from "../assets/login-bg.png";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -14,14 +14,14 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm((prev) => ({...prev, [e.target.name]: e.target.value }));
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.email.trim() ||!form.password) {
+    if (!form.email.trim() || !form.password) {
       setError("Email and password are required.");
       return;
     }
@@ -30,34 +30,34 @@ export default function Login() {
     setError("");
 
     try {
-      const data = await signIn(form);
-      const role = data?.user?.role || data?.role;
+      // Clean payload containing strictly email and password
+      const payload = {
+        email: form.email.trim(),
+        password: form.password,
+      };
 
-      if (role === "ADMIN") navigate("/admin", { replace: true });
-      else if (role === "OFFICER") navigate("/officer", { replace: true });
+      const user = await signIn(payload);
+      const role = user?.role || "CITIZEN";
+
+      if (role === "ADMIN") navigate("/admin", { replace: false });
+      else if (role === "OFFICER") navigate("/officer", { replace: false });
       else navigate("/dashboard", { replace: true });
 
     } catch (err) {
-      const msg =
-        err.response?.data?.detail ||
-        err.response?.data?.error ||
-        err.response?.data?.non_field_errors?.[0] ||
-        "Invalid credentials. Please try again.";
-      setError(msg);
+      setError(err.message || "Invalid credentials. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen w-full flex bg-white">
+    <div className="min-h-screen w-full flex bg-white m-8 rounded-md">
       {/* Left - Branding - Hidden on mobile */}
       <div className="hidden lg:flex lg:w-[55%] relative bg-white">
-       <img
-        src={loginBg}
-        alt="County services background"
-        className="absolute inset-0 w-full h-full object-cover opacity-100"
-      />
+        <img
+          src={loginBg}
+          alt="County services background"
+          className="absolute inset-0 w-full h-full object-cover opacity-100"
+        />
         <div className="absolute inset-0 bg-gradient-to-br from-[#0F4C75]/90 to-slate-900/90" />
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           <div>
@@ -65,7 +65,7 @@ export default function Login() {
           </div>
           <div className="space-y-4">
             <h1 className="text-5xl font-extrabold leading-[1.1] tracking-tight">
-              Welcome<br/>Back
+              Welcome<br />Back
             </h1>
             <p className="text-gray-300 max-w-md text-[15px] leading-relaxed">
               Securely access county services, track applications, and manage your citizen profile in one place.
@@ -120,7 +120,7 @@ export default function Login() {
                 <input
                   id="password"
                   name="password"
-                  type={showPassword? "text" : "password"}
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="••••••••"
                   value={form.password}
@@ -133,7 +133,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
-                  {showPassword? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -144,7 +144,7 @@ export default function Login() {
               className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-[#0F4C75] text-white text-sm font-semibold transition hover:bg-[#123d5a] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
-              {loading? "Signing in..." : "Sign in"}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 

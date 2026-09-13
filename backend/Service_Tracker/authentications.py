@@ -1,5 +1,7 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 
 # ======================
@@ -47,3 +49,24 @@ class LoginView(TokenObtainPairView):
     """JWT login endpoint."""
 
     serializer_class = LoginSerializer
+
+class CookieJWTAuthentication(JWTAuthentication):
+    """
+    Custom authentication class to pull the JWT access token 
+    from HttpOnly cookies instead of the Authorization header.
+    """
+    def authenticate(self, request):
+        header = self.get_header(request)
+        raw_token = None
+
+        if header is None:
+            # Fallback to reading the token from the HttpOnly cookie
+            raw_token = request.COOKIES.get('access_token')
+        else:
+            raw_token = self.get_raw_token(header)
+
+        if raw_token is None:
+            return None
+
+        validated_token = self.get_validated_token(raw_token)
+        return self.get_user(validated_token), validated_token

@@ -1,5 +1,7 @@
 from uuid import uuid4
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
 
 from .Transitions import get_allowed_next_states
 from .models import Application, CountyNotice, StatusLog
@@ -22,6 +24,7 @@ class StatusLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusLog
         fields = (
+            "id",
             "from_state",
             "to_state",
             "changed_by",
@@ -29,16 +32,16 @@ class StatusLogSerializer(serializers.ModelSerializer):
             "timestamp",
         )
 
-    # def get_changed_by(self, obj):
-    #     if obj.changed_by:
-    #         return obj.changed_by.email
-    #     return None
+    def get_changed_by(self, obj):
+        if obj.changed_by:
+            return obj.changed_by.email
+        return None
 
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):
     """Create a new application by referencing a CountyNotice service ID."""
 
-    service_id = serializers.IntegerField(write_only=True, required= True)
+    service_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Application
@@ -51,7 +54,7 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
             "tracking_number",
         )
         read_only_fields = ("id", "tracking_number", "county_id", "service_type")
-
+ 
     def validate_payload_data(self, value):
         """Ensure payload is a JSON object."""
         if not isinstance(value, dict):
@@ -62,11 +65,12 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         service_id = attrs.pop("service_id", None)
         
         try:
-            notice = CountyNotice.objects.get(id=attrs.pop("service_id"))
-            attrs["county_id"] = notice.county_id
+            notice = CountyNotice.objects.get(id=service_id)
             attrs["service_type"] = notice.service_type
+            attrs["county_id"] = notice.county_id
         except CountyNotice.DoesNotExist:
-            raise serializers.ValidationError({"service_id": "Invalid service. Refresh service list."})
+            raise serializers.ValidationError({"service_id": "Invalid or inactive government service ID."})
+            
         return attrs
 
     def create(self, validated_data):
@@ -78,8 +82,6 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
 class ApplicationListSerializer(serializers.ModelSerializer):
     """Application summary for dashboards."""
 
-    title = serializers.CharField(source= "get_services_type_display,read_only= True")
-
     class Meta:
         model = Application
         fields = (
@@ -89,13 +91,14 @@ class ApplicationListSerializer(serializers.ModelSerializer):
             "county_id",
             "status",
             "created_at",
+            "updated_at",
         )
 
 
 class ApplicationDetailSerializer(serializers.ModelSerializer):
     """Detailed application view."""
 
-    # citizen = serializers.StringRelatedField()
+    citizen = serializers.StringRelatedField()
     logs = StatusLogSerializer(many=True, read_only=True)
     allowed_actions = serializers.SerializerMethodField()
 
@@ -104,13 +107,13 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "tracking_number",
-            # "citizen",
+            "citizen",
             "county_id",
             "service_type",
             "status",
             "payload_data",
             "created_at",
-            # "updated_at",
+            "updated_at",
             "allowed_actions",
             "logs",
         )
@@ -124,3 +127,47 @@ class ApplicationStatusSerializer(serializers.Serializer):
 
     status = serializers.ChoiceField(choices=Application.Status.choices)
     comment = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class LoginSerializer(TokenObtainPairSerializer):
+    """Authenticate explicitly using email and password."""
+    
+    username_field = 'email'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'] = serializers.EmailField()
+        if 'username' in self.fields:
+            self.fields.pop('username')
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        if email and password:
+            user = authenticate(request=self.context.get('request'), email=email, password=password)
+            
+            if not user:
+                raise serializers.ValidationError("No active account found with the given credentials.")
+            if not user.is_active:
+                raise serializers.ValidationError("User account is disabled.")
+                
+            self.user = user
+        else:
+            raise serializers.ValidationError("Must include 'email' and 'password'.")
+
+        refresh = self.get_token(self.user)
+        data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "role": self.user.role,
+            "user": {
+                "id": self.user.id,
+                "email": self.user.email,
+                "first_name": getattr(self.user, "first_name", ""),
+                "last_name": getattr(self.user, "last_name", ""),
+                "role": self.user.role,
+                "county_code": getattr(self.user, "county_code", None),
+            }
+        }
+        return data

@@ -2,7 +2,6 @@ import logging
 import os
 from django.core.mail import send_mail
 from django.conf import settings
-
 logger = logging.getLogger(__name__)
 
 class NotificationService:
@@ -49,3 +48,4 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Email transmission failure to {recipient_email}: {str(e)}")
             return False
+            

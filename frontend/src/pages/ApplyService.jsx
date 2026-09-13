@@ -4,11 +4,19 @@ import { ShieldCheck, ArrowLeft, Send } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
+// Unified auth helper checking all storage keys to prevent false "Session Expired" errors
 const getAuthHeaders = () => {
-  // const token = localStorage.getItem("access") || localStorage.getItem("access_token") || localStorage.getItem("token");
+  const token = 
+    localStorage.getItem("access") || 
+    localStorage.getItem("access_token") || 
+    localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Session expired. Please login again.");
+  }
   return {
     "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
+    "Authorization": `Bearer ${token}`
   };
 };
 
@@ -88,15 +96,14 @@ export default function ApplyService() {
   const { serviceId } = useParams() || {};
   const navigate = useNavigate();
 
-  const [servicesList, setServicesList] = useState([]);
-  const [selectedServiceId, setSelectedServiceId] = useState(serviceId || "");
+  const [servicesList, setServicesList] = useState(FALLBACK_SERVICES);
+  const [selectedServiceId, setSelectedServiceId] = useState(serviceId || "1");
   const [formData, setFormData] = useState({});
   const [generalDescription, setGeneralDescription] = useState("");
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [successTracking, setSuccessTracking] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -104,17 +111,19 @@ export default function ApplyService() {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch(`${API_BASE}/county-notices/`, {
-          headers: getAuthHeaders(),
-        });
         
-        if (!res.ok) throw new Error("Failed to load available county services catalog.");
+        const headers = getAuthHeaders();
+        const res = await fetch(`${API_BASE}/county-notices/`, { headers });
+        
+        if (!res.ok) {
+          throw new Error("Using standard service catalog configurations.");
+        }
+        
         const data = await res.json();
         const notices = Array.isArray(data) ? data : data?.results || [];
         
-        if (mounted) {
-          // Merge dynamic API records with fallback config structures if custom fields aren't supplied by backend
-          const combinedList = (notices.length > 0 ? notices : FALLBACK_SERVICES).map(svc => {
+        if (mounted && notices.length > 0) {
+          const combinedList = notices.map(svc => {
             const fallbackMatch = FALLBACK_SERVICES.find(f => String(f.id) === String(svc.id) || f.county_id === svc.county_id);
             return {
               ...svc,
@@ -124,23 +133,19 @@ export default function ApplyService() {
               ]
             };
           });
-
           setServicesList(combinedList);
-
-          if (serviceId) {
-            setSelectedServiceId(serviceId);
-          } else if (combinedList.length > 0) {
-            setSelectedServiceId(String(combinedList[0].id));
-          }
         }
-      } catch (err) {
+      } catch {
         if (mounted) {
           setServicesList(FALLBACK_SERVICES);
-          if (serviceId) setSelectedServiceId(serviceId);
-          else if (FALLBACK_SERVICES.length > 0) setSelectedServiceId(String(FALLBACK_SERVICES[0].id));
         }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+          if (serviceId) {
+            setSelectedServiceId(serviceId);
+          }
+        }
       }
     };
 
@@ -152,7 +157,6 @@ export default function ApplyService() {
     return servicesList.find((item) => String(item.id) === String(selectedServiceId)) || servicesList[0];
   }, [servicesList, selectedServiceId]);
 
-  // Reset or initialize dynamic form state when service selection changes
   useEffect(() => {
     if (selectedNotice?.fields) {
       const initialFields = {};
@@ -182,10 +186,8 @@ export default function ApplyService() {
       setSubmitting(true);
       setError("");
 
-      const parsedServiceId = parseInt(selectedServiceId, 10);
-      
       const payload = {
-        service_id: isNaN(parsedServiceId) ? 1 : parsedServiceId,
+        service_id: Number(selectedServiceId),
         payload_data: {
           ...formData,
           description: generalDescription,
@@ -194,27 +196,41 @@ export default function ApplyService() {
         },
       };
 
+      const headers = getAuthHeaders();
       const res = await fetch(`${API_BASE}/applications/`, {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers,
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const errorMsg = typeof data === "object" ? Object.values(data).flat().join(" ") : "Submission failed.";
-        throw new Error(errorMsg || `Request failed with status ${res.status}`);
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate("/login");
+        throw new Error("Session expired. Please login again.");
       }
 
-      const trackingRef = data?.tracking_number || `CNT-${Math.floor(100000 + Math.random() * 900000)}`;
-      setSuccessTracking(trackingRef);
+      const data = await res.json().catch(() => ({}));
+      
+      if (!res.ok) {
+        const msg = data.detail || (typeof data === 'object' ? Object.values(data).flat().join(" ") : "Submission failed.");
+        throw new Error(msg);
+      }
 
-      setTimeout(() => {
-        navigate("/dashboard", { state: { newApplication: trackingRef } });
-      }, 2500);
+      const trackingNum = data.tracking_number || `REG-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      // SUCCESS -> Redirect directly to the Payment Page, passing application metadata in state
+      navigate("/payment", { 
+        state: { 
+          trackingNumber: trackingNum,
+          applicationId: data.id || trackingNum,
+          serviceTitle: selectedNotice?.title,
+          serviceCode: selectedNotice?.county_id
+        } 
+      });
 
     } catch (err) {
-      setError(err.message || "Unable to submit application.");
+      setError(err.message || "Failed to submit application.");
+    } finally {
       setSubmitting(false);
     }
   };
@@ -236,6 +252,7 @@ export default function ApplyService() {
         
         {/* Navigation back */}
         <button 
+          type="button"
           onClick={() => navigate("/dashboard")}
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
         >
@@ -246,122 +263,115 @@ export default function ApplyService() {
           <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
             <ShieldCheck size={16} /> Official eCitizen-Style Portal
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">Depart<span className="text-amber-500">mental</span>  Service <span className="text-amber-500">Application</span> </h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">
+            Departmental Service <span className="text-amber-500">Application</span>
+          </h1>
           <p className="text-sm text-slate-500 mt-1">Complete the digital form below customized for your selected county service.</p>
         </header>
 
-        {successTracking ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center space-y-4 shadow-sm animate-fadeIn">
-            <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">✓</div>
-            <h2 className="text-xl font-bold text-emerald-900">Application Submitted Successfully!</h2>
-            <p className="text-sm text-emerald-700 max-w-md mx-auto">
-              Your tracking reference number is <strong className="font-mono bg-emerald-100 px-2 py-1 rounded text-emerald-900">{successTracking}</strong>. Redirecting you to your tracking dashboard...
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Service Metadata Sidebar */}
-            <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                  {selectedNotice?.county_id || "Active Portfolio"}
-                </span>
-                <h2 className="text-lg font-bold text-slate-900 pt-1">{selectedNotice?.title || "Select Service"}</h2>
+        <div className="grid gap-6 lg:grid-cols-3">
+          
+          {/* Service Metadata Sidebar */}
+          <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                {selectedNotice?.county_id || "Active Portfolio"}
+              </span>
+              <h2 className="text-lg font-bold text-slate-900 pt-1">{selectedNotice?.title || "Select Service"}</h2>
+            </div>
+            
+            {selectedNotice?.requirements?.length > 0 && (
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Required Information & Docs:</p>
+                <ul className="list-disc list-inside text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                  {selectedNotice.requirements.map((req, idx) => (
+                    <li key={idx}>{req}</li>
+                  ))}
+                </ul>
               </div>
-              
-              {selectedNotice?.requirements?.length > 0 && (
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Required Information & Docs:</p>
-                  <ul className="list-disc list-inside text-xs text-slate-600 space-y-1.5 leading-relaxed">
-                    {selectedNotice.requirements.map((req, idx) => (
-                      <li key={idx}>{req}</li>
-                    ))}
-                  </ul>
+            )}
+          </aside>
+
+          {/* Dynamic Form Content Section */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
+            {error && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="service_id" className="mb-2 block text-sm font-semibold text-slate-700">Select Portfolio Service</label>
+                <select
+                  id="service_id"
+                  value={selectedServiceId}
+                  onChange={(e) => setSelectedServiceId(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800 font-medium"
+                >
+                  {servicesList.map((svc) => (
+                    <option key={svc.id} value={svc.id}>
+                      {svc.title} {svc.county_id ? `(${svc.county_id})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Render Service-Specific Custom Inputs */}
+              {selectedNotice?.fields?.length > 0 && (
+                <div className="space-y-4 pt-2 pb-2 border-t border-slate-100">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 pt-2">Service-Specific Particulars</h3>
+                  {selectedNotice.fields.map((field) => (
+                    <div key={field.name}>
+                      <label htmlFor={field.name} className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        {field.label} {field.required && <span className="text-red-500">*</span>}
+                      </label>
+                      <input
+                        id={field.name}
+                        type={field.type || "text"}
+                        required={field.required}
+                        value={formData[field.name] || ""}
+                        placeholder={field.placeholder || ""}
+                        onChange={(e) => handleInputChange(field.name, e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
-            </aside>
 
-            {/* Dynamic Form Content Section */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
-              {error && (
-                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
+              <div>
+                <label htmlFor="description" className="mb-2 block text-sm font-semibold text-slate-700">Additional Information / Supporting Notes</label>
+                <textarea
+                  id="description"
+                  value={generalDescription}
+                  onChange={(e) => setGeneralDescription(e.target.value)}
+                  rows={4}
+                  placeholder="Provide any additional information/instructions"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800"
+                />
+              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="service_id" className="mb-2 block text-sm font-semibold text-slate-700">Select Portfolio Service</label>
-                  <select
-                    id="service_id"
-                    value={selectedServiceId}
-                    onChange={(e) => setSelectedServiceId(e.target.value)}
-                    required
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  >
-                    {servicesList.map((svc) => (
-                      <option key={svc.id} value={svc.id}>
-                        {svc.title} {svc.county_id ? `(${svc.county_id})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Render Service-Specific Custom Inputs */}
-                {selectedNotice?.fields?.length > 0 && (
-                  <div className="space-y-4 pt-2 pb-2 border-t border-slate-100">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 pt-2">Service-Specific Particulars</h3>
-                    {selectedNotice.fields.map((field) => (
-                      <div key={field.name}>
-                        <label htmlFor={field.name} className="mb-1.5 block text-sm font-semibold text-slate-700">
-                          {field.label} {field.required && <span className="text-red-500">*</span>}
-                        </label>
-                        <input
-                          id={field.name}
-                          type={field.type || "text"}
-                          required={field.required}
-                          value={formData[field.name] || ""}
-                          placeholder={field.placeholder || ""}
-                          onChange={(e) => handleInputChange(field.name, e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div>
-                  <label htmlFor="description" className="mb-2 block text-sm font-semibold text-slate-700">Additional Information / Supporting Notes</label>
-                  <textarea
-                    id="description"
-                    value={generalDescription}
-                    onChange={(e) => setGeneralDescription(e.target.value)}
-                    rows={4}
-                    placeholder="Provide any additional information/instructions"
-                    className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-                  <button 
-                    type="button" 
-                    onClick={() => navigate("/")} 
-                    className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit" 
-                    disabled={submitting} 
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50"
-                  >
-                    {submitting ? "Processing Application..." : <>Submit Application <Send size={16} /></>}
-                  </button>
-                </div>
-              </form>
-            </section>
-          </div>
-        )}
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                <button 
+                  type="button" 
+                  onClick={() => navigate("/dashboard")} 
+                  className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={submitting} 
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50"
+                >
+                  {submitting ? "Processing Application..." : <>Proceed to Payment <Send size={16} /></>}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       </div>
     </main>
   );

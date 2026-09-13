@@ -3,20 +3,17 @@ import { AuthContext } from "../context/AuthProvider";
 
 export default function useAuth(requiredRoles = []) {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be inside AuthProvider");
-
-  if (requiredRoles.length && !context.hasRole(requiredRoles)) {
-    throw new Error(`Unauthorized: requires ${requiredRoles.join(",")}`);
+  
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
   }
-  return context;
 
-  const signIn = async (credentials) => {
-  try {
-    const response = await client.post("/auth/token/", credentials);
-    
-    return response.data; 
-  } catch (error) {
-    throw error;
-  }
- };
+  const hasAccess = requiredRoles.length === 0 || context.hasRole(requiredRoles);
+
+  return {
+    ...context,
+    hasAccess,
+    // Helper to use in pages instead of throwing
+    checkRole: (roles) => context.hasRole(roles)
+  };
 }

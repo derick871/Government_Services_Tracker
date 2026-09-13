@@ -3,7 +3,7 @@ import client from "./Services/api";
 // Login
 export const login = async (credentials) => {
   return client.post(
-    "/auth/login/",
+    "/auth/token/",
     credentials
   );
 };
