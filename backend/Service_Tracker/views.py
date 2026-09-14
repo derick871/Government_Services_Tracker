@@ -19,7 +19,7 @@ from .permissions import (
     IsOfficerOrAdmin,
     IsApplicationOwner,
 )
-from .Transitions import validate_transition, InvalidStateTransition
+from .transitions import validate_transition, InvalidStateTransition
 
 
 class CountyNoticeListView(generics.ListAPIView):
@@ -141,8 +141,8 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 key='access_token',
                 value=access,
                 httponly=True,
-                secure=not settings.DEBUG,
-                samesite='Lax',
+                secure= True,
+                samesite='None',
                 max_age=60 * 15,  # 15 minutes
                 path='/'
             )
@@ -150,9 +150,10 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 key='refresh_token',
                 value=refresh,
                 httponly=True,
-                secure=not settings.DEBUG,
+                secure= True,
                 samesite='Lax',
                 max_age=60 * 60 * 24 * 7,  # 7 days
                 path='/api/'
             )
-        return super().finalize_response(request, response, *args, **kwargs)
+        response.data= {"msg":"login success"}
+        # return super().finalize_response(request, response, *args, **kwargs)

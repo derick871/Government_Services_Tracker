@@ -125,8 +125,8 @@ else:
     }
 
 
-# Cross-Origin Resource Sharing (CORS) & CSRF Configuration
-# Permits communication with Vite/React single page applications
+CORS_ALLOW_CREDENTIALS = True  # <--- MUST BE ADDED TO ALLOW COOKIES ACROSS ORIGINS
+
 DEFAULT_CORS_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
@@ -144,14 +144,13 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://government-services-tracker-23.onrender.com",
     "https://government-services-tracker.vercel.app",
-    ]
-
+]
 
 
 # Django REST Framework & OpenAPI Documentation Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'authentication.authentications.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

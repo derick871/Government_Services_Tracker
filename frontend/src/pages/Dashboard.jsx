@@ -15,18 +15,19 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
 
-// Robust auth utility: Fails fast on missing token and redirects to login on 401
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("access") || localStorage.getItem("access_token") || localStorage.getItem("token");
-  if (!token) {
-    localStorage.clear();
-    window.location.href = "/login";
-    throw new Error("No authorization token found.");
-  }
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+// Standard headers for JSON requests with cookie credentials included
+const getFetchOptions = (method = "GET", body = null) => {
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // Essential for HttpOnly cookie transmission
   };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  return options;
 };
 
 export default function Dashboard() {
@@ -52,19 +53,15 @@ export default function Dashboard() {
     }
   }, [location]);
 
-  // Fetch all applications
+  // Fetch all applications using cookie-based auth
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await fetch(`${API_BASE}/applications/`, {
-        method: "GET",
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(`${API_BASE}/applications/`, getFetchOptions("GET"));
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.clear();
           window.location.href = "/login";
           return;
         }
@@ -100,12 +97,9 @@ export default function Dashboard() {
       setDetailLoading(true);
       setSelectedApplication(app); // Render drawer immediately with list data
       
-      const res = await fetch(`${API_BASE}/applications/${app.tracking_number}/`, {
-        headers: getAuthHeaders(),
-      });
+      const res = await fetch(`${API_BASE}/applications/${app.tracking_number}/`, getFetchOptions("GET"));
       
       if (res.status === 401) {
-        localStorage.clear();
         window.location.href = "/login";
         return;
       }

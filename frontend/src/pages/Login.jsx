@@ -30,7 +30,6 @@ export default function Login() {
     setError("");
 
     try {
-      // Clean payload containing strictly email and password
       const payload = {
         email: form.email.trim(),
         password: form.password,
@@ -39,8 +38,8 @@ export default function Login() {
       const user = await signIn(payload);
       const role = user?.role || "CITIZEN";
 
-      if (role === "ADMIN") navigate("/admin", { replace: false });
-      else if (role === "OFFICER") navigate("/officer", { replace: false });
+      if (role === "ADMIN") navigate("/admin", { replace: true });
+      else if (role === "OFFICER") navigate("/officer", { replace: true });
       else navigate("/dashboard", { replace: true });
 
     } catch (err) {
@@ -49,9 +48,10 @@ export default function Login() {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen w-full flex bg-white m-8 rounded-md">
-      {/* Left - Branding - Hidden on mobile */}
+      {/* Left - Branding */}
       <div className="hidden lg:flex lg:w-[55%] relative bg-white">
         <img
           src={loginBg}

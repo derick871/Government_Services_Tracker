@@ -16,11 +16,10 @@ export function AuthProvider({ children }) {
   const [alert, setAlert] = useState(null);
   const refreshPromiseRef = useRef(null);
 
-  // 1. Bootstrap - ask backend who am I? Cookie is sent automatically
+  // Bootstrap session check on initial load
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        // withCredentials:true will send access_token cookie
         const { data } = await client.get("/auth/me/");
         setUser(data);
       } catch {
@@ -32,40 +31,39 @@ export function AuthProvider({ children }) {
     restoreSession();
   }, []);
 
-  // Single-flight refresh 
+  // Single-flight token refresh mechanism
   const handleRefresh = useCallback(async () => {
     if (refreshPromiseRef.current) return refreshPromiseRef.current;
 
     refreshPromiseRef.current = client
-     .post("/auth/token/refresh/")
-     .then(() => true)
-     .catch(() => {
+      .post("/auth/token/refresh/")
+      .then(() => true)
+      .catch((err) => {
         setUser(null);
-        throw new Error("Session expired");
+        throw err;
       })
-     .finally(() => {
+      .finally(() => {
         refreshPromiseRef.current = null;
       });
 
     return refreshPromiseRef.current;
   }, []);
 
-  //  Axios 401 interceptor - uses cookies, not header injection
+  // Axios 401 response interceptor for automatic token refresh retry
   useEffect(() => {
     const interceptor = client.interceptors.response.use(
       (res) => res,
       async (error) => {
         const original = error.config;
 
-        // Don't retry /me or /token itself
-        const isAuthEndpoint = original.url.includes("/auth/token");
-         const isMeEndpoint = original.url.includes("/auth/me");
+        const isAuthEndpoint = original.url?.includes("/auth/token");
+        const isMeEndpoint = original.url?.includes("/auth/me");
 
-        if (error.response?.status === 401 &&!original._retry &&!isAuthEndpoint &&!isMeEndpoint) {
+        if (error.response?.status === 401 && !original._retry && !isAuthEndpoint && !isMeEndpoint) {
           original._retry = true;
           try {
             await handleRefresh();
-            return client(original); // cookie is now new, retry
+            return client(original); // Retry original request with new cookie
           } catch (refreshError) {
             setUser(null);
             return Promise.reject(refreshError);
@@ -83,11 +81,9 @@ export function AuthProvider({ children }) {
 
   const clearAlert = useCallback(() => setAlert(null), []);
 
-  // SignIn - backend sets HttpOnly cookies
   const signIn = useCallback(async (credentials) => {
     setIsAuthenticating(true);
     try {
-      // Send only email and password to match the updated backend serializer
       const { data } = await client.post("/auth/token/", {
         email: credentials.email, 
         password: credentials.password,
@@ -107,9 +103,10 @@ export function AuthProvider({ children }) {
       setIsAuthenticating(false);
     }
   }, []);
+
   const signOut = useCallback(async () => {
     try {
-      await client.post("/api/auth/logout/");
+      await client.post("/auth/logout/"); // Fixed double /api prefix bug
     } finally {
       setUser(null);
     }
@@ -123,7 +120,7 @@ export function AuthProvider({ children }) {
     isLoading: isInitializing || isAuthenticating,
     isInitializing,
     isAuthenticating,
-    isAuthenticated:!!user,
+    isAuthenticated: !!user,
     role: user?.role || null,
     countyCode: user?.county_code || null,
     isAdmin: user?.role === ROLE.ADMIN,
@@ -131,7 +128,7 @@ export function AuthProvider({ children }) {
     isCitizen: user?.role === ROLE.CITIZEN,
     hasRole: (roles) => {
       if (!user?.role) return false;
-      const roleList = Array.isArray(roles)? roles : [roles];
+      const roleList = Array.isArray(roles) ? roles : [roles];
       return roleList.includes(user.role);
     },
     signIn,
