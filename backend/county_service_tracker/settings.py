@@ -1,48 +1,45 @@
 """
 Django settings for county_service_tracker project.
-Refined for Capstone Production & Render Deployment Standards.
+Refined for Capstone Production & Render/Vercel Deployment Standards.
 """
 
 import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
-from decouple import config
+from decouple import config, UndefinedValueError
 from dotenv import load_dotenv
 
-# Load environment variables from a root .env file
+# Load environment variables from a root .env file if present
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('DJANGO_SECRET_KEY')
+# Core Security & Environment
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='unsafe-secret-key-for-dev')
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
-
-# Render dynamically passes RENDER_EXTERNAL_HOSTNAME upon deployment
+# Host Configuration
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 
 ALLOWED_HOSTS = [
     'localhost',
-    'government-services-tracker.vercel.app',
     '127.0.0.1',
-
-    '.onrender.com',  # Matches any Render app domain
+    'government-services-tracker.vercel.app',
+    'government-services-tracker-6.onrender.com',
 ]
+
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# Additional allowed hosts passed as a space/comma-separated string
-EXTRA_ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split()
+# Additional allowed hosts passed via environment string
+EXTRA_ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='')
 if EXTRA_ALLOWED_HOSTS:
-    ALLOWED_HOSTS.extend([host.strip() for host in EXTRA_ALLOWED_HOSTS if host.strip()])
+    ALLOWED_HOSTS.extend([host.strip() for host in EXTRA_ALLOWED_HOSTS.split(',') if host.strip()])
 
 
-# Application definition
-
+# Application Definition
 INSTALLED_APPS = [
     'django.contrib.admindocs',
     'django.contrib.admin',
@@ -58,19 +55,19 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',  
     
-    # Custom Core System Apps
+    # System Apps
     'Service_Tracker', 
     'authentication',
-    'Payments'
+    'Payments',
 ]
 
-# Unified Identity Blueprint Router mapping custom RBAC User profiles
+# Custom RBAC User Model Blueprint
 AUTH_USER_MODEL = 'authentication.User'
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Intercepts cross-origin requests at top
+    'corsheaders.middleware.CorsMiddleware',  # Must be as high as possible
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serves production static files efficiently
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Production static file optimization
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -101,8 +98,7 @@ WSGI_APPLICATION = 'county_service_tracker.wsgi.application'
 
 
 # Database Configuration
-# Uses Render's DATABASE_URL string in production with automatic fallback to local env values
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = config('DATABASE_URL', default=None)
 
 if DATABASE_URL:
     DATABASES = {
@@ -125,29 +121,33 @@ else:
     }
 
 
-CORS_ALLOW_CREDENTIALS = True  # <--- MUST BE ADDED TO ALLOW COOKIES ACROSS ORIGINS
+# CORS & Cookie Security Configuration
+CORS_ALLOW_CREDENTIALS = True  
 
 DEFAULT_CORS_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
     'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'https://government-services-tracker.vercel.app',
+    'https://government-services-tracker-eomvnif7y-derick871s-projects.vercel.app/',
+
 ]
 
-RAW_CORS_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '')
+RAW_CORS_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='')
 if RAW_CORS_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in RAW_CORS_ORIGINS.split() if origin.strip()]
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in RAW_CORS_ORIGINS.split(',') if origin.strip()]
 else:
     CORS_ALLOWED_ORIGINS = DEFAULT_CORS_ORIGINS
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{RENDER_EXTERNAL_HOSTNAME}" if RENDER_EXTERNAL_HOSTNAME else "http://localhost:5173",
     "https://*.onrender.com",
-    "https://government-services-tracker-23.onrender.com",
+    "https://government-services-tracker-7.onrender.com",
     "https://government-services-tracker.vercel.app",
 ]
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 
-# Django REST Framework & OpenAPI Documentation Settings
+# Django REST Framework Integration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authentication.authentications.CookieJWTAuthentication',
@@ -167,37 +167,29 @@ SIMPLE_JWT = {
 }
 
 
-# Distributed Task Engine Architecture (Redis & Celery Setup)
-CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+# Distributed Task Engine Architecture (Redis & Celery)
+CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 
 # Transactional Outbound Mail Server Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = f"County Service Tracker <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "noreply@county.go.ke"
 
 
-# Password validation
+# Password Validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
@@ -208,20 +200,21 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static Files (CSS, JavaScript, Images) for Render / WhiteNoise
+# Static & Media Files (WhiteNoise Storage Strategy)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# mpesa keys
-MPESA_ENV = config("MPESA_ENV")
-MPESA_SHORTCODE = config("MPESA_B2C_SHORTCODE")
-MPESA_CONSUMER_KEY = config("MPESA_CUSTOMER_KEY")
-MPESA_CONSUMER_SECRET = config("MPESA_B2C_SECURITY_CREDENTIAL") 
-MPESA_PASSKEY = config("MPESA_PASSKEY")
-MPESA_CALLBACK_URL = config("MPESA_CALLBACK_URL")
-
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'media/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+ 
+
+# Integration Keys (M-Pesa API Ecosystem)
+MPESA_ENV = config("MPESA_ENV", default="sandbox")
+MPESA_SHORTCODE = config("MPESA_B2C_SHORTCODE", default="")
+MPESA_CONSUMER_KEY = config("MPESA_CUSTOMER_KEY", default="")
+MPESA_CONSUMER_SECRET = config("MPESA_B2C_SECURITY_CREDENTIAL", default="") 
+MPESA_PASSKEY = config("MPESA_PASSKEY", default="")
+MPESA_CALLBACK_URL = config("MPESA_CALLBACK_URL", default="")

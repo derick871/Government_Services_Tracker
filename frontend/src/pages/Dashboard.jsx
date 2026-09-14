@@ -15,14 +15,13 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
 
-// Standard headers for JSON requests with cookie credentials included
 const getFetchOptions = (method = "GET", body = null) => {
   const options = {
     method,
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // Essential for HttpOnly cookie transmission
+    credentials: "include", // Essential for HttpOnly cookie transmission with backend
   };
   if (body) {
     options.body = JSON.stringify(body);
@@ -35,29 +34,26 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
-  // Filtering & Selection state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedApplication, setSelectedApplication] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
   const [recentTrackingRef, setRecentTrackingRef] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Capture navigation state from ApplyService once on mount
   useEffect(() => {
     if (location.state?.newApplication) {
       setRecentTrackingRef(location.state.newApplication);
-      window.history.replaceState({}, document.title); // Clean state to prevent reload loops
+      window.history.replaceState({}, document.title);
     }
   }, [location]);
 
-  // Fetch all applications using cookie-based auth
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
+      // Ensured correct trailing slash matching Django routing expectations
       const response = await fetch(`${API_BASE}/applications/`, getFetchOptions("GET"));
 
       if (!response.ok) {
@@ -73,7 +69,6 @@ export default function Dashboard() {
       const records = Array.isArray(data) ? data : data?.results || [];
       setApplications(records);
 
-      // Auto-select newly created application if passed from navigation state
       if (recentTrackingRef) {
         const matched = records.find(r => r.tracking_number === recentTrackingRef);
         if (matched) {
@@ -91,12 +86,10 @@ export default function Dashboard() {
     fetchApplications();
   }, [fetchApplications]);
 
-  // Fetch full details with state logs for the drawer view
   const handleViewDetails = async (app) => {
     try {
-      setDetailLoading(true);
-      setSelectedApplication(app); // Render drawer immediately with list data
-      
+      setSelectedApplication(app); 
+      // Ensuring tracking ID route lookup syntax uses proper trailing slash
       const res = await fetch(`${API_BASE}/applications/${app.tracking_number}/`, getFetchOptions("GET"));
       
       if (res.status === 401) {
@@ -106,25 +99,20 @@ export default function Dashboard() {
       
       if (res.ok) {
         const fullData = await res.json();
-        setSelectedApplication(fullData); // Upgrade with deep metadata and logs
+        setSelectedApplication(fullData);
       }
     } catch {
-      // Fallback gracefully to basic data if detail endpoint fails
-    } finally {
-      setDetailLoading(false);
+      // Graceful fallback to basic data
     }
   };
 
-  // Memoized metrics aggregation
   const metrics = useMemo(() => ({
     total: applications.length,
-    submitted: applications.filter(a => a.status === "SUBMITTED").length,
     pending: applications.filter(a => ["SUBMITTED", "UNDER_REVIEW", "ACTION_REQUIRED", "VERIFIED"].includes(a.status)).length,
     approved: applications.filter(a => a.status === "APPROVED").length,
     rejected: applications.filter(a => a.status === "REJECTED").length,
   }), [applications]);
 
-  // Robust client-side filter and search logic
   const filteredApplications = useMemo(() => {
     return applications.filter(app => {
       const q = searchQuery.toLowerCase();
@@ -345,7 +333,6 @@ export default function Dashboard() {
           <div className="w-full max-w-lg bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between" onClick={(e) => e.stopPropagation()}>
             <div className="space-y-6">
               
-              {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <span className="text-xs font-mono font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
@@ -363,7 +350,6 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* Status Banner */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-slate-500 font-medium">Status Progression</p>
@@ -379,67 +365,23 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Metadata Panel */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Application Parameters</h4>
-                
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <span className="block text-xs text-slate-400">Created Date</span>
-                    <span className="font-medium text-slate-800">
-                      {selectedApplication.created_at ? new Date(selectedApplication.created_at).toLocaleDateString() : "N/A"}
-                    </span>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <span className="block text-xs text-slate-400">Department</span>
-                    <span className="font-medium text-slate-800">County Directorate</span>
-                  </div>
-                </div>
-
-                {/* Submitted Dynamic Form Data (payload_data) */}
+              {/* State History / Audit Logs */}
+              {selectedApplication.logs?.length > 0 && (
                 <div className="space-y-2 pt-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Submitted Form Data</h4>
-                  {selectedApplication.payload_data && Object.keys(selectedApplication.payload_data).length > 0 ? (
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {Object.entries(selectedApplication.payload_data).map(([k, v]) => (
-                        <div key={k} className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs flex justify-between gap-2">
-                          <span className="text-slate-400 font-medium uppercase">{k.replaceAll("_", " ")}</span>
-                          <span className="text-slate-800 font-semibold text-right">{String(v)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border">No extended fields captured.</p>
-                  )}
-                </div>
-
-                {/* State History / Audit Logs */}
-                {selectedApplication.logs?.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">State History Log</h4>
-                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                      {selectedApplication.logs.map((log, idx) => (
-                        <div key={idx} className="text-xs border-l-2 pl-3 py-1.5 border-blue-500 bg-slate-50/50 rounded-r-lg">
-                          <p className="font-bold text-slate-800">{log.from_state || "INIT"} $\rightarrow$ {log.to_state}</p>
-                          <p className="text-slate-500 mt-0.5">{log.comment || "State updated"} • {new Date(log.timestamp).toLocaleString()}</p>
-                        </div>
-                      ))}
-                    </div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">State History Log</h4>
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {selectedApplication.logs.map((log, idx) => (
+                      <div key={idx} className="text-xs border-l-2 pl-3 py-1.5 border-blue-500 bg-slate-50/50 rounded-r-lg">
+                        <p className="font-bold text-slate-800">{log.from_state || "INIT"} &rarr; {log.to_state}</p>
+                        <p className="text-slate-500 mt-0.5">{log.comment || "State updated"} • {new Date(log.timestamp).toLocaleString()}</p>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* Drawer Footer Actions */}
             <div className="pt-6 border-t border-slate-100 flex gap-3 mt-6">
-              {selectedApplication.status === "APPROVED" && (
-                <button 
-                  onClick={() => alert("Downloading digital permit/certificate copy...")}
-                  className="flex-1 bg-emerald-600 text-white font-semibold text-sm py-3 rounded-xl hover:bg-emerald-700 transition flex items-center justify-center gap-2"
-                >
-                  <FileText size={16} /> Download Certificate
-                </button>
-              )}
               <button 
                 onClick={() => setSelectedApplication(null)}
                 className="flex-1 bg-slate-900 text-white font-semibold text-sm py-3 rounded-xl hover:bg-slate-800 transition"

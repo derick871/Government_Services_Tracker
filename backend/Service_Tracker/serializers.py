@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 
-from .Transitions import get_allowed_next_states
+from .transitions import get_allowed_next_states
 from .models import Application, CountyNotice, StatusLog
 
 
@@ -56,7 +56,6 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "tracking_number", "county_id", "service_type")
  
     def validate_payload_data(self, value):
-        """Ensure payload is a JSON object."""
         if not isinstance(value, dict):
             raise serializers.ValidationError("Payload must be a JSON object.")
         return value
@@ -74,7 +73,6 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        """Create application with unique tracking number."""
         validated_data["tracking_number"] = f"TRK-{uuid4().hex[:8].upper()}"
         return Application.objects.create(**validated_data)
 
@@ -171,3 +169,4 @@ class LoginSerializer(TokenObtainPairSerializer):
             }
         }
         return data
+

@@ -1,9 +1,9 @@
-from django.conf import settings
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.conf import settings
 
 from .models import Application, CountyNotice, StatusLog
 from .serializers import (
@@ -40,10 +40,7 @@ class CountyNoticeByCountyView(generics.ListAPIView):
 
 
 class ApplicationListCreateView(generics.ListCreateAPIView):
-    """
-    API endpoint to apply for a service (POST) 
-    and list dashboard applications based on the authenticated user role (GET).
-    """
+    """API endpoint to apply for a service (POST) and list dashboard applications (GET)."""
     permission_classes = [IsAuthenticatedUser]
 
     def get_queryset(self):
@@ -52,10 +49,8 @@ class ApplicationListCreateView(generics.ListCreateAPIView):
 
         if role == "ADMIN":
             return Application.objects.all()
-
         if role == "OFFICER":
-            return Application.objects.filter(county_id=user.county_code)
-
+            return Application.objects.filter(county_id=getattr(user, "county_code", None))
         return Application.objects.filter(citizen=user)
 
     def get_serializer_class(self):
@@ -64,6 +59,7 @@ class ApplicationListCreateView(generics.ListCreateAPIView):
         return ApplicationListSerializer
 
     def perform_create(self, serializer):
+        # Maps the incoming request user to the 'citizen' field
         serializer.save(citizen=self.request.user)
 
 
@@ -129,31 +125,55 @@ class UserMeView(APIView):
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
-    """Custom Token Obtain Pair view that sets HTTP-only cookies for JWT tokens."""
+    """
+    Authenticate the user and store JWT tokens in HttpOnly cookies.
+    """
+
     serializer_class = LoginSerializer
 
-    def finalize_response(self, request, response, *args, **kwargs):
-        if response.status_code == 200 and 'access' in response.data:
-            access = response.data['access']
-            refresh = response.data['refresh']
+    def finalize_response(
+        self,
+        request,
+        response,
+        *args,
+        **kwargs,
+    ):
+        response = super().finalize_response(
+            request,
+            response,
+            *args,
+            **kwargs,
+        )
 
-            response.set_cookie(
-                key='access_token',
-                value=access,
-                httponly=True,
-                secure= True,
-                samesite='None',
-                max_age=60 * 15,  # 15 minutes
-                path='/'
-            )
-            response.set_cookie(
-                key='refresh_token',
-                value=refresh,
-                httponly=True,
-                secure= True,
-                samesite='Lax',
-                max_age=60 * 60 * 24 * 7,  # 7 days
-                path='/api/'
-            )
-        response.data= {"msg":"login success"}
-        # return super().finalize_response(request, response, *args, **kwargs)
+        if response.status_code != 200:
+            return response
+
+        access = response.data.get("access")
+        refresh = response.data.get("refresh")
+
+        if not access or not refresh:
+            return response
+
+        is_production = not settings.DEBUG
+
+        response.set_cookie(
+            key="access_token",
+            value=access,
+            httponly=True,
+            secure=is_production,
+            samesite="None" if is_production else "Lax",
+            max_age=60 * 60,
+            path="/",
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh,
+            httponly=True,
+            secure=is_production,
+            samesite="None" if is_production else "Lax",
+            max_age=60 * 60 * 24 * 7,
+            path="/",
+        )
+
+        return response

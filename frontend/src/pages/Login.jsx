@@ -112,7 +112,7 @@ export default function Login() {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-xs font-medium text-blue-500 hover:underline">
+                <Link to="/forgot-password" classN="text-xs font-medium text-blue-500 hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -153,10 +153,6 @@ export default function Login() {
             <Link to="/register" className="font-semibold text-[#0F4C75] hover:underline">
               Create account
             </Link>
-          </p>
-
-          <p className="mt-8 text-center text-[11px] text-slate-400 leading-relaxed">
-            By signing in, you agree to our <Link to="/terms" className="underline hover:text-slate-600">Terms</Link> and <Link to="/privacy" className="underline hover:text-slate-600">Privacy Policy</Link>
           </p>
         </div>
       </div>

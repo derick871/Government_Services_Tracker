@@ -144,7 +144,7 @@ export default function PaymentPage() {
               placeholder="2547XXXXXXXX"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="mt-1 w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0A1931] outline-none"
+              className="mt-1 w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0A1931] outline-none text-slate-500"
               required
             />
           </div>
@@ -156,7 +156,7 @@ export default function PaymentPage() {
               min="1"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              className="mt-1 w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0A1931] outline-none font-semibold"
+              className="mt-1 w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0A1931] outline-none font-semibold text-slate-500"
               required
             />
           </div>

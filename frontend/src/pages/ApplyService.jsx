@@ -4,23 +4,25 @@ import { ShieldCheck, ArrowLeft, Send } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
-// Unified auth helper checking all storage keys to prevent false "Session Expired" errors
+// Unified auth helper supporting both cookies and fallback token storage
 const getAuthHeaders = () => {
   const token = 
     localStorage.getItem("access") || 
     localStorage.getItem("access_token") || 
     localStorage.getItem("token");
 
-  if (!token) {
-    throw new Error("Session expired. Please login again.");
-  }
-  return {
+  const headers = {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
   };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  return headers;
 };
 
-// Fallback static definitions mirroring Home page cards with custom form field keys
+// Fallback static definitions mirroring county portfolio cards
 const FALLBACK_SERVICES = [
   {
     id: "1",
@@ -113,7 +115,11 @@ export default function ApplyService() {
         setError("");
         
         const headers = getAuthHeaders();
-        const res = await fetch(`${API_BASE}/county-notices/`, { headers });
+        // Added trailing slash to match Django URL expectations
+        const res = await fetch(`${API_BASE}/county-notices/`, { 
+          headers,
+          credentials: "include" 
+        });
         
         if (!res.ok) {
           throw new Error("Using standard service catalog configurations.");
@@ -197,9 +203,11 @@ export default function ApplyService() {
       };
 
       const headers = getAuthHeaders();
+      // Added trailing slash to match Django URL route definitions
       const res = await fetch(`${API_BASE}/applications/`, {
         method: "POST",
         headers,
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -218,8 +226,8 @@ export default function ApplyService() {
 
       const trackingNum = data.tracking_number || `REG-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      // SUCCESS -> Redirect directly to the Payment Page, passing application metadata in state
-      navigate("/payment", { 
+      // Redirect directly to the Payment Page, passing application metadata in state
+      navigate("/paymentpage", { 
         state: { 
           trackingNumber: trackingNum,
           applicationId: data.id || trackingNum,

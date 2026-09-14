@@ -16,19 +16,21 @@ export function AuthProvider({ children }) {
   const [alert, setAlert] = useState(null);
   const refreshPromiseRef = useRef(null);
 
-  // Bootstrap session check on initial load
+  // Bootstrap session check on initial load using HttpOnly cookies
   useEffect(() => {
+    let isMounted = true;
     const restoreSession = async () => {
       try {
         const { data } = await client.get("/auth/me/");
-        setUser(data);
+        if (isMounted) setUser(data);
       } catch {
-        setUser(null);
+        if (isMounted) setUser(null);
       } finally {
-        setIsInitializing(false);
+        if (isMounted) setIsInitializing(false);
       }
     };
     restoreSession();
+    return () => { isMounted = false; };
   }, []);
 
   // Single-flight token refresh mechanism
@@ -63,7 +65,7 @@ export function AuthProvider({ children }) {
           original._retry = true;
           try {
             await handleRefresh();
-            return client(original); // Retry original request with new cookie
+            return client(original); 
           } catch (refreshError) {
             setUser(null);
             return Promise.reject(refreshError);
@@ -81,11 +83,12 @@ export function AuthProvider({ children }) {
 
   const clearAlert = useCallback(() => setAlert(null), []);
 
+  // Optimized sign-in: utilizes the user payload returned straight from /auth/token/
   const signIn = useCallback(async (credentials) => {
     setIsAuthenticating(true);
     try {
       const { data } = await client.post("/auth/token/", {
-        email: credentials.email, 
+        email: credentials.email.trim(), 
         password: credentials.password,
       });
 
@@ -97,7 +100,12 @@ export function AuthProvider({ children }) {
       setUser(userData);
       return userData;
     } catch (err) {
-      const message = err.response?.data?.detail || err.response?.data?.email?.[0] || err.message || "Invalid credentials.";
+      const message = 
+        err.response?.data?.detail || 
+        err.response?.data?.non_field_errors?.[0] || 
+        err.response?.data?.email?.[0] || 
+        err.message || 
+        "Invalid credentials.";
       throw new Error(message);
     } finally {
       setIsAuthenticating(false);
@@ -106,7 +114,9 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     try {
-      await client.post("/auth/logout/"); // Fixed double /api prefix bug
+      await client.post("/auth/logout/");
+    } catch {
+      // Ignore network failures on logout and clean client-side state anyway
     } finally {
       setUser(null);
     }
@@ -138,8 +148,11 @@ export function AuthProvider({ children }) {
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="text-sm text-gray-500">Restoring session...</span>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center space-y-2">
+          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs font-medium text-slate-500">Restoring session...</span>
+        </div>
       </div>
     );
   }

@@ -1,68 +1,221 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+import logging
+
 from django.contrib.auth import get_user_model
-from .models import Application  # Adjust path to match your project layout
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
+
+from .models import Application
 from .notifications import NotificationService
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
+
+
 @receiver(post_save, sender=User)
 def trigger_account_verification_alert(sender, instance, created, **kwargs):
     """
-    Alerts user upon account registration to securely check email for activation.
+    Notify a newly created inactive user that account verification is required.
     """
-    if created and not instance.is_active:
-        email_subject = "Action Required: Verify Your Civic Portal Account"
-        email_body = (
-            f"Hello {instance.first_name or 'there'},\n\n"
-            f"Your account has been successfully provisioned. To complete security checks, "
-            f"please check your email account to verify your identity and activate your profile.\n\n"
-            f"Regards,\nCounty Service Team"
+
+    if not created:
+        return
+
+    if instance.is_active:
+        return
+
+    if not instance.email:
+        logger.warning(
+            "Cannot send account verification notification: "
+            "user %s has no email address.",
+            instance.pk,
         )
-        sms_body = "Your account was created! Please navigate to your email account to verify and activate it."
-        
-        # Dispatch asynchronous execution blocks
-        NotificationService.send_email(email_subject, instance.email, email_body)
-        if hasattr(instance, 'profile') and instance.profile.phone_number:
-            NotificationService.send_sms(instance.profile.phone_number, sms_body)
+        return
+
+    email_subject = "Action Required: Verify Your Civic Portal Account"
+
+    email_body = (
+        f"Hello {instance.first_name or 'there'},\n\n"
+        "Your account has been successfully created. "
+        "Please check your email and complete the verification process "
+        "to activate your account.\n\n"
+        "Regards,\n"
+        "County Service Team"
+    )
+
+    sms_body = (
+        "Your County Service Tracker account was created. "
+        "Please check your email to verify and activate your account."
+    )
+
+    try:
+        NotificationService.send_email(
+            email_subject,
+            instance.email,
+            email_body,
+        )
+    except Exception:
+        logger.exception(
+            "Account verification email failed for user %s",
+            instance.pk,
+        )
+
+    profile = getattr(instance, "profile", None)
+
+    if profile and getattr(profile, "phone_number", None):
+        try:
+            NotificationService.send_sms(
+                profile.phone_number,
+                sms_body,
+            )
+        except Exception:
+            logger.exception(
+                "Account verification SMS failed for user %s",
+                instance.pk,
+            )
+
+
+@receiver(pre_save, sender=Application)
+def capture_application_previous_status(
+    sender,
+    instance,
+    **kwargs,
+):
+    """
+    Capture the previous database status before an Application is saved.
+    """
+
+    if not instance.pk:
+        instance._old_status = None
+        return
+
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+        instance._old_status = old_instance.status
+    except sender.DoesNotExist:
+        instance._old_status = None
 
 
 @receiver(post_save, sender=Application)
-def trigger_application_state_alert(sender, instance, created, **kwargs):
+def trigger_application_state_alert(
+    sender,
+    instance,
+    created,
+    **kwargs,
+):
     """
-    Monitors state changes on citizen applications and routes contextual text/email logs.
+    Send notifications only when an application's status actually changes.
     """
-    # Define notification matrix parameters mapping states to template bodies
-    STATE_TEMPLATES = {
-        "SUBMITTED": {
-            "subject": "Application Successfully Submitted",
-            "email": "Your application has been received and logged into our system. Tracking ID: {id}.",
-            "sms": "Application successfully submitted! Tracking ID: {id}."
-        },
-        "APPROVED": {
-            "subject": "Application Update: Approved",
-            "email": "Congratulations, your application (ID: {id}) has been formally approved.",
-            "sms": "Great news! Your application (ID: {id}) has been approved."
-        },
-        "REJECTED": {
-            "subject": "Application Update: Action Required",
-            "email": "We regret to inform you that your application (ID: {id}) was rejected following standard evaluation metrics.",
-            "sms": "Your application (ID: {id}) was rejected. Please review your email details."
-        }
-    }
 
-    state = instance.status.upper()
-    if state not in STATE_TEMPLATES:
+    old_status = getattr(instance, "_old_status", None)
+    new_status = instance.status
+
+    # Only notify for newly-created SUBMITTED applications
+    # or an actual status transition.
+    status_changed = created or old_status != new_status
+
+    if not status_changed:
         return
 
-    # Check if state shifted or if it's a new instance submission
-    if created or instance.tracker.has_changed('status'):
-        templates = STATE_TEMPLATES[state]
-        user = instance.user
-        
-        formatted_email = templates["email"].format(id=instance.id)
-        formatted_sms = templates["sms"].format(id=instance.id)
+    STATE_TEMPLATES = {
+        Application.Status.SUBMITTED: {
+            "subject": "Application Successfully Submitted",
+            "email": (
+                "Your application has been received and logged into "
+                "our system. Tracking ID: {tracking_number}."
+            ),
+            "sms": (
+                "Application successfully submitted! "
+                "Tracking ID: {tracking_number}."
+            ),
+        },
+        Application.Status.UNDER_REVIEW: {
+            "subject": "Application Under Review",
+            "email": (
+                "Your application (Tracking ID: {tracking_number}) "
+                "is now under review."
+            ),
+            "sms": (
+                "Your application {tracking_number} is now under review."
+            ),
+        },
+        Application.Status.ACTION_REQUIRED: {
+            "subject": "Action Required on Your Application",
+            "email": (
+                "Your application (Tracking ID: {tracking_number}) "
+                "requires additional action. Please check your portal "
+                "for details."
+            ),
+            "sms": (
+                "Action required for application {tracking_number}. "
+                "Please check your portal."
+            ),
+        },
+        Application.Status.VERIFIED: {
+            "subject": "Application Verified",
+            "email": (
+                "Your application (Tracking ID: {tracking_number}) "
+                "has been verified and is awaiting final processing."
+            ),
+            "sms": (
+                "Application {tracking_number} has been verified."
+            ),
+        },
+        Application.Status.APPROVED: {
+            "subject": "Application Update: Approved",
+            "email": (
+                "Congratulations. Your application "
+                "(Tracking ID: {tracking_number}) has been approved."
+            ),
+            "sms": (
+                "Good news! Application {tracking_number} "
+                "has been approved."
+            ),
+        },
+        Application.Status.REJECTED: {
+            "subject": "Application Update: Rejected",
+            "email": (
+                "Your application (Tracking ID: {tracking_number}) "
+                "has been rejected. Please check the portal for details."
+            ),
+            "sms": (
+                "Application {tracking_number} was rejected. "
+                "Please check your portal for details."
+            ),
+        },
+    }
 
-        NotificationService.send_email(templates["subject"], user.email, formatted_email)
-        if hasattr(user, 'profile') and user.profile.phone_number:
-            NotificationService.send_sms(user.profile.phone_number, formatted_sms)
+    template = STATE_TEMPLATES.get(new_status)
+
+    if not template:
+        return
+
+    citizen = instance.citizen
+
+    if not citizen.email:
+        logger.warning(
+            "Application %s citizen has no email address.",
+            instance.tracking_number,
+        )
+    else:
+        formatted_email = template["email"].format(
+            tracking_number=instance.tracking_number,
+        )
+
+        NotificationService.send_email(
+            template["subject"],
+            citizen.email,
+            formatted_email,
+        )
+
+    profile = getattr(citizen, "profile", None)
+
+    if profile and getattr(profile, "phone_number", None):
+        formatted_sms = template["sms"].format(
+            tracking_number=instance.tracking_number,
+        )
+
+        NotificationService.send_sms(
+            profile.phone_number,
+            formatted_sms,
+        )

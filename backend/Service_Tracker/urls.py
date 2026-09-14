@@ -11,7 +11,7 @@ from .views import (
     UpdateApplicationStatusView,
 )
 
-app_name = "Service_Tracker"
+app_name = "service_tracker"
 
 urlpatterns = [
     # ======================
@@ -34,15 +34,15 @@ urlpatterns = [
     ),
 
     # ======================
-    # County Notices
+    # County Notices (Fixed to match frontend /api/county-notices/)
     # ======================
     path(
-        "notices/",
+        "county-notices/",
         CountyNoticeListView.as_view(),
         name="notice_list",
     ),
     path(
-        "notices/<str:county_id>/",
+        "county-notices/<str:county_id>/",
         CountyNoticeByCountyView.as_view(),
         name="notice_by_county",
     ),
@@ -56,13 +56,13 @@ urlpatterns = [
         name="application_list",
     ),
     path(
-        "applications/<str:tracking_number>/",
-        ApplicationDetailView.as_view(),
-        name="application_detail",
-    ),
-    path(
         "applications/<int:pk>/status/",
         UpdateApplicationStatusView.as_view(),
         name="application_status",
+    ),
+    path(
+        "applications/<str:tracking_number>/",
+        ApplicationDetailView.as_view(),
+        name="application_detail",
     ),
 ]

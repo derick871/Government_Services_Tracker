@@ -1,15 +1,33 @@
 import axios from "axios";
 
-const API_BASE_URL = 
-  import.meta.env.VITE_API_URL || 
-  import.meta.env.VITE_API_BASE_URL || 
-  "https://government-services-tracker-23.onrender.com/api";
+const getCleanBaseUrl = () => {
+  let url = 
+    import.meta.env.VITE_API_URL || 
+    'http://localhost:8000/api';
+
+    // import.meta.env.VITE_API_BASE_URL || 
+    // 'http://localhost:8000/api';
+
+  
+  // Clean up trailing slash if present so path concatenation is consistent
+  url= url.replace(/\/$/, '');
+  if (url.endsWith("/")) {
+    url = url.slice(0, -1);
+  }
+  
+  // Append /api if not already included in the env variable config
+  if (!url.endsWith("/api")) {
+    url = `${url}/api`;
+  }
+  
+  return url;
+};
 
 const client = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getCleanBaseUrl(),
   headers: { "Content-Type": "application/json" },
-  timeout: 15000,
-  withCredentials: true, 
+  timeout: 20000,
+  withCredentials: true, // cookie-based auth token transmission
 });
 
 export default client;
