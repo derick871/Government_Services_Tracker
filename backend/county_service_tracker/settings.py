@@ -128,7 +128,7 @@ DEFAULT_CORS_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'https://government-services-tracker.vercel.app',
-    'https://government-services-tracker-eomvnif7y-derick871s-projects.vercel.app/',
+    'https://government-services-tracker-eomvnif7y-derick871s-projects.vercel.app'
 
 ]
 
@@ -140,7 +140,7 @@ else:
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
-    "https://government-services-tracker-7.onrender.com",
+    "https://government-services-tracker-6.onrender.com",
     "https://government-services-tracker.vercel.app",
 ]
 if RENDER_EXTERNAL_HOSTNAME:
