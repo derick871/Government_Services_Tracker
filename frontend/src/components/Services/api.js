@@ -1,33 +1,43 @@
 import axios from "axios";
 
-const getCleanBaseUrl = () => {
-  let url = 
-    import.meta.env.VITE_API_URL || 
-    'http://localhost:8000/api';
+const getApiBaseUrl = () => {
+  const configuredUrl = import.meta.env.VITE_API_URL;
 
-    // import.meta.env.VITE_API_BASE_URL || 
-    // 'http://localhost:8000/api';
+  if (!configuredUrl) {
+    // Local development fallback
+    return "http://127.0.0.1:8000/api";
+  }
 
-  
-  // Clean up trailing slash if present so path concatenation is consistent
-  url= url.replace(/\/$/, '');
-  if (url.endsWith("/")) {
-    url = url.slice(0, -1);
-  }
-  
-  // Append /api if not already included in the env variable config
-  if (!url.endsWith("/api")) {
-    url = `${url}/api`;
-  }
-  
-  return url;
+  return configuredUrl
+    .trim()
+    .replace(/\/+$/, "");
 };
 
 const client = axios.create({
-  baseURL: getCleanBaseUrl(),
-  headers: { "Content-Type": "application/json" },
+  baseURL: getApiBaseUrl(),
   timeout: 20000,
-  withCredentials: true, // cookie-based auth token transmission
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });
+
+
+client.interceptors.request.use(
+  (config) => {
+    const token =
+      localStorage.getItem("access") ||
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default client;
