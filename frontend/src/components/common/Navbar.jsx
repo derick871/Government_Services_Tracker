@@ -1,33 +1,30 @@
- import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Search, Bell, User, LogOut, Menu, X, Shield, Building2, LogIn 
+import {
+  Search, Bell, User, LogOut, Menu, X, Shield, Building2, LogIn
 } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
 
-export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTracking, onLogout }) {
+export default function Navbar({ isSidebarOpen, toggleSidebar }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchQuery.trim() && onSearchTracking) {
-      onSearchTracking(searchQuery.trim().toUpperCase());
+    if (searchQuery.trim()) {
+      navigate(`/trackservice?tracking=${encodeURIComponent(searchQuery.trim().toUpperCase())}`);
     }
   };
 
   const handleSignOutClick = () => {
     setShowProfileMenu(false);
-    if (onLogout) {
-      onLogout();
-    } else {
-      localStorage.removeItem("access");
-      navigate("/login");
-    }
+    signOut().finally(() => navigate('/login', { replace: true }));
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-slate-800 border-b border-slate-700 text-white px-4 md:px-6 flex items-center justify-between shadow-sm">
+    <div className="sticky top-0 z-30 h-16 bg-slate-800 border-b border-slate-700 text-white px-4 md:px-6 flex items-center justify-between shadow-sm">
       {/* Left: Brand & Mobile Menu Trigger */}
       <div className="flex items-center gap-3">
         {user && (
@@ -99,14 +96,14 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
                     <p className="font-medium text-white truncate">{user?.email}</p>
                     <p className="text-xs text-slate-400 font-mono">County: {user?.county_code || 'Nairobi'}</p>
                   </div>
-                  <Link 
-                    to="/profile" 
+                  <Link
+                    to="/profile"
                     onClick={() => setShowProfileMenu(false)}
                     className="flex items-center gap-2 px-4 py-2 hover:bg-slate-800 transition-colors text-slate-300 hover:text-white"
                   >
                     <User size={16} /> Profile & Settings
                   </Link>
-                  <button 
+                  <button
                     onClick={handleSignOutClick}
                     className="w-full flex items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors text-left"
                   >
@@ -134,6 +131,6 @@ export default function Navbar({ user, toggleSidebar, isSidebarOpen, onSearchTra
           </div>
         )}
       </div>
-    </header> 
+    </div>
   );
 }

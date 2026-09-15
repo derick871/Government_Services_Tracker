@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function ServiceTracker() {
   const [services, setServices] = useState([]);
@@ -194,7 +195,7 @@ function ServiceCard({ service }) {
 
       {/* Action */}
       <Link
-        to={`/apply/${service.id}`}
+        to={`/applyservice/${service.id}`}
         className="mt-6 flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
       >
         Apply for service

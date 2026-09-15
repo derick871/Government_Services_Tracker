@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, FileText, Search, ArrowRight, Building2, Activity, GraduationCap, MapPin, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, FileText, Search, ArrowRight, Building2, Activity, GraduationCap, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import useAuth from '../hooks/useAuth';
 
-export default function Home({ user }) {
+export default function Home() {
   const navigate = useNavigate();
-  
+  const { user } = useAuth();
+
   // Track which service's "Learn More" section is currently expanded
   const [expandedService, setExpandedService] = useState(null);
 
@@ -14,7 +16,7 @@ export default function Home({ user }) {
 
   // Handle application clicks with automated auth guard logic
   const handleApplyClick = (serviceRoute) => {
-    if (!user) { 
+    if (!user) {
       // Redirect to login first, then pass state to redirect back or just prompt sign-in
       navigate('/login', { state: { from: serviceRoute } });
     } else {
@@ -97,7 +99,7 @@ export default function Home({ user }) {
 
   return (
     <div className="space-y-12 max-w-6xl mx-auto px-4 py-8">
-      
+
       {/* Hero Banner Section */}
       <section className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-8 md:p-12 shadow-2xl">
         <div className="relative z-10 max-w-2xl space-y-4">
@@ -153,8 +155,8 @@ export default function Home({ user }) {
             const isExpanded = expandedService === service.key;
 
             return (
-              <div 
-                key={service.key} 
+              <div
+                key={service.key}
                 className="rounded-xl bg-white border border-slate-200 p-6 space-y-4 shadow-md flex flex-col justify-between transition-all hover:border-slate-300"
               >
                 <div>
@@ -166,7 +168,7 @@ export default function Home({ user }) {
                       County Portal
                     </span>
                   </div>
-                  
+
                   <h3 className="text-xl font-bold text-slate-900 mt-4">{service.title}</h3>
                   <p className="text-sm text-slate-600 mt-1">
                     {service.shortDesc}
@@ -236,7 +238,7 @@ export default function Home({ user }) {
           </p>
         </div>
       </section>
-      
+
     </div>
   );
 }
