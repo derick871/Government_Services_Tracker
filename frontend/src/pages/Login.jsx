@@ -38,8 +38,10 @@ export default function Login() {
       const user = await signIn(payload);
       const role = user?.role || "CITIZEN";
 
-      if(user === "USER")  navigate("/dashboard", { replace: true });
-
+      if (role === "ADMIN") navigate("/admin", { replace: true });
+      else if (role === "OFFICER") navigate("/officer", { replace: true });
+      else navigate("/dashboard", { replace: true });
+      
     } catch (err) {
       setError(err.message || "Invalid credentials. Please try again.");
     } finally {
