@@ -1,39 +1,25 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  FilePlus, 
-  ArrowRight, 
-  Search, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import client from "../components/Services/api";
+import useAuth from "../hooks/useAuth";
+import {
+  FilePlus,
+  ArrowRight,
+  Search,
+  Clock,
+  CheckCircle,
+  XCircle,
   FileText,
   ChevronRight,
   X,
   Sparkles
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
-
-const getFetchOptions = (method = "GET", body = null) => {
-  const options = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // Essential for HttpOnly cookie transmission with backend
-  };
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
-  return options;
-};
-
 export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedApplication, setSelectedApplication] = useState(null);
@@ -41,6 +27,7 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, isAuthenticating } = useAuth();
 
   useEffect(() => {
     if (location.state?.newApplication) {
@@ -54,18 +41,7 @@ export default function Dashboard() {
       setLoading(true);
       setError("");
       // Ensured correct trailing slash matching Django routing expectations
-      const response = await fetch(`${API_BASE}/applications/`, getFetchOptions("GET"));
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          window.location.href = "/login";
-          return;
-        }
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || `Request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
+      const { data } = await client.get("/applications/");
       const records = Array.isArray(data) ? data : data?.results || [];
       setApplications(records);
 
@@ -83,24 +59,23 @@ export default function Dashboard() {
   }, [recentTrackingRef]);
 
   useEffect(() => {
+    if (isAuthenticating) return;
+
+    if (!isAuthenticated) {
+      setApplications([]);
+      setLoading(false);
+      return;
+    }
+
     fetchApplications();
-  }, [fetchApplications]);
+  }, [fetchApplications, isAuthenticated, isAuthenticating]);
 
   const handleViewDetails = async (app) => {
     try {
-      setSelectedApplication(app); 
+      setSelectedApplication(app);
       // Ensuring tracking ID route lookup syntax uses proper trailing slash
-      const res = await fetch(`${API_BASE}/applications/${app.tracking_number}/`, getFetchOptions("GET"));
-      
-      if (res.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
-      
-      if (res.ok) {
-        const fullData = await res.json();
-        setSelectedApplication(fullData);
-      }
+      const { data } = await client.get(`/applications/${app.tracking_number}/`);
+      setSelectedApplication(data);
     } catch {
       // Graceful fallback to basic data
     }
@@ -116,11 +91,11 @@ export default function Dashboard() {
   const filteredApplications = useMemo(() => {
     return applications.filter(app => {
       const q = searchQuery.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         (app.tracking_number?.toLowerCase() || "").includes(q) ||
         (app.service_type?.toLowerCase() || "").includes(q) ||
         (app.county_id?.toLowerCase() || "").includes(q);
-      
+
       if (!matchesSearch) return false;
       if (statusFilter === "ALL") return true;
       if (statusFilter === "PENDING") {
@@ -148,8 +123,8 @@ export default function Dashboard() {
           <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-bold text-xl">!</div>
           <h2 className="font-bold text-xl text-gray-900">Dashboard Unavailable</h2>
           <p className="text-sm text-slate-500">{error}</p>
-          <button 
-            onClick={fetchApplications} 
+          <button
+            onClick={fetchApplications}
             className="w-full rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition"
           >
             Retry Connection
@@ -162,7 +137,7 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen bg-[#F8FAFC] pb-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8 pt-8">
-        
+
         {/* Welcome Header */}
         <section className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -255,13 +230,13 @@ export default function Dashboard() {
               </div>
               <h3 className="font-bold text-slate-800 text-base">No records matched your filters</h3>
               <p className="text-slate-500 text-sm max-w-sm mx-auto mt-1 mb-6">
-                {applications.length === 0 
-                  ? "You haven't submitted any service requests yet." 
+                {applications.length === 0
+                  ? "You haven't submitted any service requests yet."
                   : "Try clearing search inputs or changing status filters."}
               </p>
               {applications.length === 0 && (
-                <button 
-                  onClick={() => navigate("/applyService")} 
+                <button
+                  onClick={() => navigate("/applyService")}
                   className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 transition"
                 >
                   Create First Application <ArrowRight size={16} />
@@ -284,8 +259,8 @@ export default function Dashboard() {
                   {filteredApplications.map((app) => {
                     const isNewest = app.tracking_number === recentTrackingRef;
                     return (
-                      <tr 
-                        key={app.id || app.tracking_number} 
+                      <tr
+                        key={app.id || app.tracking_number}
                         className={`transition-colors group cursor-pointer ${isNewest ? 'bg-blue-50/60 hover:bg-blue-50' : 'hover:bg-slate-50/85'}`}
                         onClick={() => handleViewDetails(app)}
                       >
@@ -307,7 +282,7 @@ export default function Dashboard() {
                           <StatusBadge status={app.status} />
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleViewDetails(app);
@@ -332,7 +307,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex justify-end animate-fadeIn" onClick={() => setSelectedApplication(null)}>
           <div className="w-full max-w-lg bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between" onClick={(e) => e.stopPropagation()}>
             <div className="space-y-6">
-              
+
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <span className="text-xs font-mono font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
@@ -342,7 +317,7 @@ export default function Dashboard() {
                     {selectedApplication.service_type?.replaceAll("_", " ")}
                   </h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setSelectedApplication(null)}
                   className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition"
                 >
@@ -382,7 +357,7 @@ export default function Dashboard() {
             </div>
 
             <div className="pt-6 border-t border-slate-100 flex gap-3 mt-6">
-              <button 
+              <button
                 onClick={() => setSelectedApplication(null)}
                 className="flex-1 bg-slate-900 text-white font-semibold text-sm py-3 rounded-xl hover:bg-slate-800 transition"
               >
@@ -397,13 +372,13 @@ export default function Dashboard() {
 }
 
 function MetricCard({ title, value, type = "info", icon }) {
-  const typeStyles = { 
-    success: "border-l-emerald-500 bg-emerald-50/20", 
-    warning: "border-l-amber-500 bg-amber-50/20", 
-    danger: "border-l-red-500 bg-red-50/20", 
-    info: "border-l-blue-500 bg-blue-50/20" 
+  const typeStyles = {
+    success: "border-l-emerald-500 bg-emerald-50/20",
+    warning: "border-l-amber-500 bg-amber-50/20",
+    danger: "border-l-red-500 bg-red-50/20",
+    info: "border-l-blue-500 bg-blue-50/20"
   };
-  
+
   return (
     <div className={`rounded-2xl border border-slate-200 border-l-4 bg-white p-6 shadow-sm hover:shadow-md transition-all ${typeStyles[type]}`}>
       <div className="flex items-center justify-between">
@@ -416,15 +391,15 @@ function MetricCard({ title, value, type = "info", icon }) {
 }
 
 function StatusBadge({ status }) {
-  const styles = { 
-    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200", 
-    UNDER_REVIEW: "bg-amber-50 text-amber-700 border-amber-200", 
-    ACTION_REQUIRED: "bg-orange-50 text-orange-700 border-orange-200", 
-    VERIFIED: "bg-purple-50 text-purple-700 border-purple-200", 
-    APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200", 
-    REJECTED: "bg-red-50 text-red-700 border-red-200" 
+  const styles = {
+    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200",
+    UNDER_REVIEW: "bg-amber-50 text-amber-700 border-amber-200",
+    ACTION_REQUIRED: "bg-orange-50 text-orange-700 border-orange-200",
+    VERIFIED: "bg-purple-50 text-purple-700 border-purple-200",
+    APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    REJECTED: "bg-red-50 text-red-700 border-red-200"
   };
-  
+
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border ${styles[status] || "bg-slate-50 text-slate-500 border-slate-200"}`}>
       <span className="w-1.5 h-1.5 rounded-full bg-current"></span>

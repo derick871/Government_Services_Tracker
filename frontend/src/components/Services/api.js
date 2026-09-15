@@ -1,43 +1,54 @@
 import axios from "axios";
 
-const getApiBaseUrl = () => {
-  const configuredUrl = import.meta.env.VITE_API_URL;
-
-  if (!configuredUrl) {
-    // Local development fallback
-    return "http://127.0.0.1:8000/api";
-  }
-
-  return configuredUrl
-    .trim()
-    .replace(/\/+$/, "");
-};
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://government-services-tracker-6.onrender.com/api";
 
 const client = axios.create({
-  baseURL: getApiBaseUrl(),
-  timeout: 20000,
+  baseURL,
   withCredentials: true,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-
 client.interceptors.request.use(
   (config) => {
-    const token =
-      localStorage.getItem("access") ||
-      localStorage.getItem("access_token") ||
-      localStorage.getItem("token");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+let refreshRequest = null;
+
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    const isAuthRequest = originalRequest?.url?.startsWith("/auth/");
+
+    if (
+      error.response?.status !== 401 ||
+      originalRequest?._retry ||
+      isAuthRequest
+    ) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    try {
+      refreshRequest ??= client.post("/auth/refresh/").finally(() => {
+        refreshRequest = null;
+      });
+      await refreshRequest;
+      return client(originalRequest);
+    } catch (refreshError) {
+      return Promise.reject(refreshError);
+    }
+  }
 );
 
 export default client;

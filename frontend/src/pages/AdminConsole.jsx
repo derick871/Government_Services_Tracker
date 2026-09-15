@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-const API_URL = "http://127.0.0.1:8000/api/applications/";
+import client from "../components/Services/api";
 
 export default function AdminConsole() {
   const [applications, setApplications] = useState([]);
@@ -13,52 +12,12 @@ export default function AdminConsole() {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("access");
-
-        const response = await fetch(API_URL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token && {
-              Authorization: `Bearer ${token}`,
-            }),
-          },
-        });
-
-        const contentType = response.headers.get("content-type");
-
-        if (!response.ok) {
-          let message = `Request failed with status ${response.status}`;
-
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-            message = data.detail || data.message || message;
-          } else {
-            const text = await response.text();
-            console.error("Server returned:", text.substring(0, 300));
-          }
-
-          throw new Error(message);
-        }
-
-        if (!contentType?.includes("application/json")) {
-          const text = await response.text();
-
-          console.error("Expected JSON but received:", text.substring(0, 300));
-
-          throw new Error(
-            "The server returned HTML instead of JSON. Check the API URL and Django routes."
-          );
-        }
-
-        const data = await response.json();
-
-
-  const records = Array.isArray(data)
+        const { data } = await client.get("/applications/");
+        const records = Array.isArray(data)
           ? data
           : Array.isArray(data.results)
-          ? data.results
-          : [];
+            ? data.results
+            : [];
 
         setApplications(records);
       } catch (err) {

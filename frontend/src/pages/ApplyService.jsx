@@ -1,26 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ShieldCheck, ArrowLeft, Send } from "lucide-react";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
-
-// Unified auth helper supporting both cookies and fallback token storage
-const getAuthHeaders = () => {
-  const token = 
-    localStorage.getItem("access") || 
-    localStorage.getItem("access_token") || 
-    localStorage.getItem("token");
-
-  const headers = {
-    "Content-Type": "application/json",
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-  
-  return headers;
-};
+import client from "../components/Services/api";
 
 // Fallback static definitions mirroring county portfolio cards
 const FALLBACK_SERVICES = [
@@ -102,7 +83,7 @@ export default function ApplyService() {
   const [selectedServiceId, setSelectedServiceId] = useState(serviceId || "1");
   const [formData, setFormData] = useState({});
   const [generalDescription, setGeneralDescription] = useState("");
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -113,21 +94,10 @@ export default function ApplyService() {
       try {
         setLoading(true);
         setError("");
-        
-        const headers = getAuthHeaders();
-        // Added trailing slash to match Django URL expectations
-        const res = await fetch(`${API_BASE}/county-notices/`, { 
-          headers,
-          credentials: "include" 
-        });
-        
-        if (!res.ok) {
-          throw new Error("Using standard service catalog configurations.");
-        }
-        
-        const data = await res.json();
+
+        const { data } = await client.get("/county-notices/");
         const notices = Array.isArray(data) ? data : data?.results || [];
-        
+
         if (mounted && notices.length > 0) {
           const combinedList = notices.map(svc => {
             const fallbackMatch = FALLBACK_SERVICES.find(f => String(f.id) === String(svc.id) || f.county_id === svc.county_id);
@@ -202,38 +172,18 @@ export default function ApplyService() {
         },
       };
 
-      const headers = getAuthHeaders();
-      // Added trailing slash to match Django URL route definitions
-      const res = await fetch(`${API_BASE}/applications/`, {
-        method: "POST",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 401) {
-        localStorage.clear();
-        navigate("/login");
-        throw new Error("Session expired. Please login again.");
-      }
-
-      const data = await res.json().catch(() => ({}));
-      
-      if (!res.ok) {
-        const msg = data.detail || (typeof data === 'object' ? Object.values(data).flat().join(" ") : "Submission failed.");
-        throw new Error(msg);
-      }
+      const { data } = await client.post("/applications/", payload);
 
       const trackingNum = data.tracking_number || `REG-${Math.floor(100000 + Math.random() * 900000)}`;
 
       // Redirect directly to the Payment Page, passing application metadata in state
-      navigate("/paymentpage", { 
-        state: { 
+      navigate("/paymentpage", {
+        state: {
           trackingNumber: trackingNum,
           applicationId: data.id || trackingNum,
           serviceTitle: selectedNotice?.title,
           serviceCode: selectedNotice?.county_id
-        } 
+        }
       });
 
     } catch (err) {
@@ -257,9 +207,9 @@ export default function ApplyService() {
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 md:px-8">
       <div className="mx-auto max-w-4xl space-y-6">
-        
+
         {/* Navigation back */}
-        <button 
+        <button
           type="button"
           onClick={() => navigate("/dashboard")}
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
@@ -278,7 +228,7 @@ export default function ApplyService() {
         </header>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          
+
           {/* Service Metadata Sidebar */}
           <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
             <div className="space-y-1">
@@ -287,7 +237,7 @@ export default function ApplyService() {
               </span>
               <h2 className="text-lg font-bold text-slate-900 pt-1">{selectedNotice?.title || "Select Service"}</h2>
             </div>
-            
+
             {selectedNotice?.requirements?.length > 0 && (
               <div className="pt-3 border-t border-slate-100 space-y-2">
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Required Information & Docs:</p>
@@ -362,16 +312,16 @@ export default function ApplyService() {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-                <button 
-                  type="button" 
-                  onClick={() => navigate("/dashboard")} 
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
                   className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={submitting} 
+                <button
+                  type="submit"
+                  disabled={submitting}
                   className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50"
                 >
                   {submitting ? "Processing Application..." : <>Proceed to Payment <Send size={16} /></>}
