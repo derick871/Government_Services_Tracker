@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
+import useAuth from "./hooks/useAuth";
 import AppLayout from "./components/common/Layout";
 
 // Public pages
@@ -14,7 +15,47 @@ import AdminConsole from "./pages/AdminConsole";
 import TrackService from "./pages/TrackService";
 import PaymentPage from "./pages/Payments";
 
-// Optional: protect auth
+function AuthLoading() {
+  return <div className="min-h-screen bg-slate-950" aria-label="Loading" />;
+}
+
+function RequireAuth() {
+  const { isAuthenticated, isAuthenticating } = useAuth();
+
+  if (isAuthenticating) {
+    return <AuthLoading />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function RequireRole({ roles }) {
+  const { isAuthenticating, hasRole } = useAuth();
+
+  if (isAuthenticating) {
+    return <AuthLoading />;
+  }
+
+  if (!hasRole(roles)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function PublicOnlyRoute({ children }) {
+  const { isAuthenticated, isAuthenticating } = useAuth();
+
+  if (isAuthenticating) {
+    return <AuthLoading />;
+  }
+
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+}
 
 export default function App() {
   return (
@@ -23,22 +64,23 @@ export default function App() {
         <Routes>
           {/* === Public - NO layout === */}
           <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+          <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
 
-          {/* === Protected - WITH AppLayout (uses Outlet) === */}
-          <Route
-            element={
-                <AppLayout />
-            }
-          >
+          {/* Dashboard is public; protected actions remain behind RequireAuth. */}
+          <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/applyservice" element={<ApplyService />} />
-            <Route path="/trackservice" element={<TrackService />} />
-            <Route path="/paymentpage" element={<PaymentPage />} />
-            
-            {/* Role-based - you can add another guard inside */}
-            <Route path="/adminconsole" element={<AdminConsole />} />
+          </Route>
+
+          <Route element={<RequireAuth />}>
+            <Route element={<AppLayout />}>
+              <Route path="/applyservice/:serviceId?" element={<ApplyService />} />
+              <Route path="/trackservice" element={<TrackService />} />
+              <Route path="/paymentpage" element={<PaymentPage />} />
+              <Route element={<RequireRole roles={["ADMIN", "OFFICER"]} />}>
+                <Route path="/adminconsole" element={<AdminConsole />} />
+              </Route>
+            </Route>
           </Route>
 
           {/* Fallback */}

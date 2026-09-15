@@ -1,4 +1,11 @@
-import { createContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+} from "react";
+
 import client from "../components/Services/api";
 
 export const AuthContext = createContext(null);
@@ -9,153 +16,147 @@ const ROLE = {
   CITIZEN: "CITIZEN",
 };
 
+const initialState = {
+  user: null,
+  isAuthenticating: true,
+  alert: null,
+};
+
+function authReducer(state, action) {
+  switch (action.type) {
+    case "AUTH_START":
+      return { ...state, isAuthenticating: true };
+    case "AUTH_SUCCESS":
+      return { ...state, user: action.user, isAuthenticating: false };
+    case "AUTH_FAILURE":
+      return { ...state, user: null, isAuthenticating: false };
+    case "ALERT_SET":
+      return { ...state, alert: action.alert };
+    case "SIGNED_OUT":
+      return { ...state, user: null, isAuthenticating: false };
+    default:
+      return state;
+  }
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [alert, setAlert] = useState(null);
-  const refreshPromiseRef = useRef(null);
-
-  // Bootstrap session check on initial load using HttpOnly cookies
-  useEffect(() => {
-    let isMounted = true;
-    const restoreSession = async () => {
-      try {
-        const { data } = await client.get("/auth/me/");
-        if (isMounted) setUser(data);
-      } catch {
-        if (isMounted) setUser(null);
-      } finally {
-        if (isMounted) setIsInitializing(false);
-      }
-    };
-    restoreSession();
-    return () => { isMounted = false; };
-  }, []);
-
-  // Single-flight token refresh mechanism
-  const handleRefresh = useCallback(async () => {
-    if (refreshPromiseRef.current) return refreshPromiseRef.current;
-
-    refreshPromiseRef.current = client
-      .post("/auth/token/refresh/")
-      .then(() => true)
-      .catch((err) => {
-        setUser(null);
-        throw err;
-      })
-      .finally(() => {
-        refreshPromiseRef.current = null;
-      });
-
-    return refreshPromiseRef.current;
-  }, []);
-
-  // Axios 401 response interceptor for automatic token refresh retry
-  useEffect(() => {
-    const interceptor = client.interceptors.response.use(
-      (res) => res,
-      async (error) => {
-        const original = error.config;
-
-        const isAuthEndpoint = original.url?.includes("/auth/token");
-        const isMeEndpoint = original.url?.includes("/auth/me");
-
-        if (error.response?.status === 401 && !original._retry && !isAuthEndpoint && !isMeEndpoint) {
-          original._retry = true;
-          try {
-            await handleRefresh();
-            return client(original); 
-          } catch (refreshError) {
-            setUser(null);
-            return Promise.reject(refreshError);
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-    return () => client.interceptors.response.eject(interceptor);
-  }, [handleRefresh]);
+  const [state, dispatch] = useReducer(authReducer, initialState);
+  const { user, isAuthenticating, alert } = state;
 
   const showAlert = useCallback((message, type = "info") => {
-    setAlert({ message, type });
+    dispatch({ type: "ALERT_SET", alert: { message, type } });
   }, []);
 
-  const clearAlert = useCallback(() => setAlert(null), []);
+  const clearAlert = useCallback(() => {
+    dispatch({ type: "ALERT_SET", alert: null });
+  }, []);
 
-  // Optimized sign-in: utilizes the user payload returned straight from /auth/token/
-  const signIn = useCallback(async (credentials) => {
-    setIsAuthenticating(true);
+  const loadCurrentUser = useCallback(async () => {
+    try {
+      const { data } = await client.get("/auth/me/");
+      dispatch({ type: "AUTH_SUCCESS", user: data });
+    } catch {
+      dispatch({ type: "AUTH_FAILURE" });
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCurrentUser();
+  }, [loadCurrentUser]);
+
+  const signIn = useCallback(async ({ email, password }) => {
+    dispatch({ type: "AUTH_START" });
+
     try {
       const { data } = await client.post("/auth/token/", {
-        email: credentials.email.trim(), 
-        password: credentials.password,
+        email: email.trim().toLowerCase(),
+        password,
       });
 
-      const userData = data?.user;
-      if (!userData) {
-        throw new Error("Invalid login response structure from server");
+      if (!data?.user) {
+        throw new Error("Invalid authentication response.");
       }
 
-      setUser(userData);
-      return userData;
+      dispatch({ type: "AUTH_SUCCESS", user: data.user });
+
+      return data.user;
     } catch (err) {
-      const message = 
-        err.response?.data?.detail || 
-        err.response?.data?.non_field_errors?.[0] || 
-        err.response?.data?.email?.[0] || 
-        err.message || 
-        "Invalid credentials.";
+      const backendError = err.response?.data;
+
+      let message =
+        backendError?.detail ||
+        backendError?.non_field_errors?.[0] ||
+        backendError?.email?.[0] ||
+        backendError?.password?.[0] ||
+        "Unable to sign in. Please check your credentials.";
+
+      if (err.code === "ERR_NETWORK") {
+        message =
+          "Unable to connect to the authentication server. Please try again.";
+      }
+
       throw new Error(message);
-    } finally {
-      setIsAuthenticating(false);
     }
   }, []);
 
   const signOut = useCallback(async () => {
     try {
       await client.post("/auth/logout/");
-    } catch {
-      // Ignore network failures on logout and clean client-side state anyway
     } finally {
-      setUser(null);
+      dispatch({ type: "SIGNED_OUT" });
     }
   }, []);
 
-  const value = useMemo(() => ({
-    user,
-    alert,
-    showAlert,
-    clearAlert,
-    isLoading: isInitializing || isAuthenticating,
-    isInitializing,
-    isAuthenticating,
-    isAuthenticated: !!user,
-    role: user?.role || null,
-    countyCode: user?.county_code || null,
-    isAdmin: user?.role === ROLE.ADMIN,
-    isOfficer: user?.role === ROLE.OFFICER,
-    isCitizen: user?.role === ROLE.CITIZEN,
-    hasRole: (roles) => {
+  const hasRole = useCallback(
+    (roles) => {
       if (!user?.role) return false;
-      const roleList = Array.isArray(roles) ? roles : [roles];
+
+      const roleList = Array.isArray(roles)
+        ? roles
+        : [roles];
+
       return roleList.includes(user.role);
     },
-    signIn,
-    signOut,
-    refresh: handleRefresh,
-  }), [user, isInitializing, isAuthenticating, alert, showAlert, clearAlert, signIn, signOut, handleRefresh]);
+    [user]
+  );
 
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center space-y-2">
-          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs font-medium text-slate-500">Restoring session...</span>
-        </div>
-      </div>
-    );
-  }
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: Boolean(user),
+      isAuthenticating,
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+      role: user?.role || null,
+      countyCode: user?.county_code || null,
+
+      isAdmin: user?.role === ROLE.ADMIN,
+      isOfficer: user?.role === ROLE.OFFICER,
+      isCitizen: user?.role === ROLE.CITIZEN,
+
+      hasRole,
+
+      signIn,
+      signOut,
+
+      alert,
+      showAlert,
+      clearAlert,
+    }),
+    [
+      user,
+      isAuthenticating,
+      hasRole,
+      signIn,
+      signOut,
+      alert,
+      showAlert,
+      clearAlert,
+    ]
+  );
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
