@@ -17,7 +17,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Core Security & Environment
-SECRET_KEY = config('DJANGO_SECRET_KEY', default='unsafe-secret-key-for-dev')
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
 # Host Configuration
@@ -26,7 +26,7 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'government-services-tracker.vercel.app',
+    # 'government-services-tracker.vercel.app',
     'government-services-tracker-6.onrender.com',
 ]
 
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'corsheaders',
-    'rest_framework_simplejwt',  
+    'rest_framework_simplejwt.token_blacklist',  
     
     # System Apps
     'Service_Tracker', 
@@ -136,12 +136,19 @@ RAW_CORS_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='')
 if RAW_CORS_ORIGINS:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in RAW_CORS_ORIGINS.split(',') if origin.strip()]
 else:
-    CORS_ALLOWED_ORIGINS = DEFAULT_CORS_ORIGINS
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://government-services-tracker-eomvnif7y-derick871s-projects.vercel.app",
+    ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "https://government-services-tracker-6.onrender.com",
-    "https://government-services-tracker.vercel.app",
+    # "https://government-services-tracker.vercel.app",
+    "https://*.vercel.app",
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
@@ -164,6 +171,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 

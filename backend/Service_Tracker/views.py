@@ -6,19 +6,19 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.conf import settings
 
 from .models import Application, CountyNotice, StatusLog
+from authentication.permissions import IsAuthenticatedUser, IsOfficerOrAdmin, IsApplicationOwner
 from .serializers import (
     CountyNoticeSerializer,
     ApplicationCreateSerializer,
     ApplicationListSerializer,
     ApplicationDetailSerializer,
     ApplicationStatusSerializer,
-    LoginSerializer,
 )
-from .permissions import (
-    IsAuthenticatedUser,
-    IsOfficerOrAdmin,
-    IsApplicationOwner,
-)
+# from ..authentication.permissions import (
+#     IsAuthenticatedUser,
+#     IsOfficerOrAdmin,
+#     IsApplicationOwner,
+# )
 from .transitions import validate_transition, InvalidStateTransition
 
 
@@ -110,70 +110,15 @@ class UpdateApplicationStatusView(generics.GenericAPIView):
         )
 
 
-class UserMeView(APIView):
-    """Return current authenticated user details and role profile."""
-    permission_classes = [IsAuthenticatedUser]
+# class UserMeView(APIView):
+#     """Return current authenticated user details and role profile."""
+#     permission_classes = [IsAuthenticatedUser]
 
-    def get(self, request):
-        user = request.user
-        return Response({
-            "id": user.id,
-            "email": user.email,
-            "role": getattr(user, "role", "CITIZEN"),
-            "county_code": getattr(user, "county_code", None),
-        })
-
-
-class CookieTokenObtainPairView(TokenObtainPairView):
-    """
-    Authenticate the user and store JWT tokens in HttpOnly cookies.
-    """
-
-    serializer_class = LoginSerializer
-
-    def finalize_response(
-        self,
-        request,
-        response,
-        *args,
-        **kwargs,
-    ):
-        response = super().finalize_response(
-            request,
-            response,
-            *args,
-            **kwargs,
-        )
-
-        if response.status_code != 200:
-            return response
-
-        access = response.data.get("access")
-        refresh = response.data.get("refresh")
-
-        if not access or not refresh:
-            return response
-
-        is_production = not settings.DEBUG
-
-        response.set_cookie(
-            key="access_token",
-            value=access,
-            httponly=True,
-            secure=is_production,
-            samesite="None" if is_production else "Lax",
-            max_age=60 * 60,
-            path="/",
-        )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh,
-            httponly=True,
-            secure=is_production,
-            samesite="None" if is_production else "Lax",
-            max_age=60 * 60 * 24 * 7,
-            path="/",
-        )
-
-        return response
+#     def get(self, request):
+#         user = request.user
+#         return Response({
+#             "id": user.id,
+#             "email": user.email,
+#             "role": getattr(user, "role", "CITIZEN"),
+#             "county_code": getattr(user, "county_code", None),
+#         })

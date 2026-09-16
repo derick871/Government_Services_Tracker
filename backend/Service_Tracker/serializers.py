@@ -1,7 +1,5 @@
 from uuid import uuid4
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import authenticate
 
 from .transitions import get_allowed_next_states
 from .models import Application, CountyNotice, StatusLog
@@ -125,48 +123,3 @@ class ApplicationStatusSerializer(serializers.Serializer):
 
     status = serializers.ChoiceField(choices=Application.Status.choices)
     comment = serializers.CharField(required=False, allow_blank=True, default="")
-
-
-class LoginSerializer(TokenObtainPairSerializer):
-    """Authenticate explicitly using email and password."""
-    
-    username_field = 'email'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['email'] = serializers.EmailField()
-        if 'username' in self.fields:
-            self.fields.pop('username')
-
-    def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
-
-        if email and password:
-            user = authenticate(request=self.context.get('request'), email=email, password=password)
-            
-            if not user:
-                raise serializers.ValidationError("No active account found with the given credentials.")
-            if not user.is_active:
-                raise serializers.ValidationError("User account is disabled.")
-                
-            self.user = user
-        else:
-            raise serializers.ValidationError("Must include 'email' and 'password'.")
-
-        refresh = self.get_token(self.user)
-        data = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-            "role": self.user.role,
-            "user": {
-                "id": self.user.id,
-                "email": self.user.email,
-                "first_name": getattr(self.user, "first_name", ""),
-                "last_name": getattr(self.user, "last_name", ""),
-                "role": self.user.role,
-                "county_code": getattr(self.user, "county_code", None),
-            }
-        }
-        return data
-

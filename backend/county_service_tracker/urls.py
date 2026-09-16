@@ -18,7 +18,7 @@ urlpatterns = [
     ), 
 
     path(
-        "api/auth/",
+        "api/",
         include("authentication.urls"),
     ),
 

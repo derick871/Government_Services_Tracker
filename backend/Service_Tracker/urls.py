@@ -1,9 +1,7 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
-    CookieTokenObtainPairView,
-    UserMeView,  
+    # UserMeView,  
     CountyNoticeListView,
     CountyNoticeByCountyView,
     ApplicationListCreateView,
@@ -14,24 +12,12 @@ from .views import (
 app_name = "service_tracker"
 
 urlpatterns = [
-    # ======================
-    # Authentication & User
-    # ======================
-    path(
-        "auth/token/",
-        CookieTokenObtainPairView.as_view(),
-        name="token_obtain_pair",
-    ),
-    path(
-        "auth/refresh/",
-        TokenRefreshView.as_view(),
-        name="token_refresh",
-    ),
-    path(
-        "auth/me/",
-        UserMeView.as_view(),
-        name="user_me",
-    ),
+   
+    # path(
+    #     "auth/me/",
+    #     UserMeView.as_view(),
+    #     name="user_me",
+    # ),
 
     # ======================
     # County Notices (Fixed to match frontend /api/county-notices/)

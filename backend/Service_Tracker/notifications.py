@@ -1,4 +1,5 @@
 import logging
+from typing import Iterable, Union
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -65,14 +66,24 @@ class NotificationService:
     @staticmethod
     def send_email(
         subject: str,
-        recipient_email: str,
+        recipient_email: Union[str, Iterable[str]],
         text_content: str,
+        html_content: str = "",
     ) -> bool:
         """
         Send a transactional email through Django's configured backend.
+
+        ``recipient_email`` may be one address or an iterable of addresses.
+        ``html_content`` is optional; when provided, it is sent as the HTML
+        alternative to the plain-text message.
         """
 
-        if not recipient_email:
+        if isinstance(recipient_email, str):
+            recipients = [recipient_email.strip()] if recipient_email.strip() else []
+        else:
+            recipients = [email.strip() for email in recipient_email if email and email.strip()]
+
+        if not recipients:
             logger.warning("Email not sent: empty recipient.")
             return False
 
@@ -81,20 +92,19 @@ class NotificationService:
                 subject=subject,
                 message=text_content,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[recipient_email],
+                recipient_list=recipients,
                 fail_silently=False,
+                html_message=html_content or None,
             )
 
             if sent == 0:
                 logger.error(
-                    "Email backend reported zero emails sent to %s.",
-                    recipient_email,
+                    "Email backend reported zero emails sent to %s.", recipients
                 )
                 return False
 
             logger.info(
-                "Email successfully dispatched to %s",
-                recipient_email,
+                "Email successfully dispatched to %s", recipients
             )
 
             return True
