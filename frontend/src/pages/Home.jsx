@@ -24,76 +24,63 @@ export default function Home() {
     }
   };
 
+  // NTSA service catalogue. Keep these field names aligned with ApplyServices so
+  // the same metadata can drive validation and the application form.
   const services = [
     {
-      key: 'permits',
-      title: 'Business & Trade Permits',
-      icon: <Building2 className="w-6 h-6 text-amber-600" />,
-      bgIcon: 'bg-amber-500/10',
-      shortDesc: 'Apply for single business permits, renewal, and regulatory compliance documents.',
-      fullDetails: {
-        requirements: [
-          'Copy of National ID / Passport',
-          'KRA PIN Certificate',
-          'Previous year permit (for renewals)',
-          'Fire safety and health clearance certificate'
-        ],
-        processingTime: '3 - 5 Working Days',
-        fees: 'Varies based on business classification and location zone.'
-      },
-      route: '/applications/permits'
+      key: 'business-permits', title: 'Business Permits', icon: <Building2 className="w-6 h-6 text-indigo-600" />, bgIcon: 'bg-indigo-500/10',
+      shortDesc: 'Apply for or renew a county business permit.', route: '/applications/business-permits',
+      fullDetails: { requirements: ['National ID or passport', 'Business registration certificate', 'Physical business address', 'Previous permit for renewals'], fields: ['applicantName', 'idNumber', 'businessName', 'businessType', 'businessLocation', 'phoneNumber'], processingTime: '1 - 3 Working Days', fees: 'Prescribed county business permit fee.' }
     },
     {
-      key: 'health',
-      title: 'Health Services & Food Handlers',
-      icon: <Activity className="w-6 h-6 text-emerald-600" />,
-      bgIcon: 'bg-emerald-500/10',
-      shortDesc: 'Secure food handler certificates, public health licenses, and facility inspections.',
-      fullDetails: {
-        requirements: [
-          'Medical examination report from an approved county hospital',
-          'Passport-sized photo',
-          'National ID card copy'
-        ],
-        processingTime: '2 - 3 Working Days',
-        fees: 'Standard county medical test and certificate fee applies.'
-      },
-      route: '/applications/health'
+      key: 'health-services', title: 'Health Services', icon: <Activity className="w-6 h-6 text-rose-600" />, bgIcon: 'bg-rose-500/10',
+      shortDesc: 'Access county health services and submit service requests.', route: '/applications/health-services',
+      fullDetails: { requirements: ['National ID or passport', 'Referral letter where applicable', 'Relevant medical records', 'Appointment details'], fields: ['applicantName', 'idNumber', 'serviceType', 'facility', 'preferredDate', 'phoneNumber'], processingTime: 'Subject to facility availability', fees: 'Fees vary by health service and facility.' }
     },
     {
-      key: 'bursaries',
-      title: 'Education Bursaries',
-      icon: <GraduationCap className="w-6 h-6 text-blue-600" />,
-      bgIcon: 'bg-blue-500/10',
-      shortDesc: 'Apply for ward-based secondary, tertiary, and university education financial support.',
-      fullDetails: {
-        requirements: [
-          'Duly filled county bursary application form',
-          'Copy of student school/university ID and admission letter',
-          'Parent/Guardian National ID copy',
-          'Proof of residency within the sub-county/ward'
-        ],
-        processingTime: 'Subject to board review cycles per financial year',
-        fees: 'Free Application'
-      },
-      route: '/applications/bursaries'
+      key: 'bursaries', title: 'Education Bursaries', icon: <GraduationCap className="w-6 h-6 text-teal-600" />, bgIcon: 'bg-teal-500/10',
+      shortDesc: 'Apply for county education bursary support.', route: '/applications/bursaries',
+      fullDetails: { requirements: ['Student National ID or birth certificate', 'Parent or guardian National ID', 'Proof of residence', 'School admission or fee statement'], fields: ['studentName', 'studentIdNumber', 'institutionName', 'courseOrClass', 'guardianName', 'phoneNumber'], processingTime: '14 - 30 Working Days', fees: 'No application fee.' }
     },
     {
-      key: 'land',
-      title: 'Land & Rates Services',
-      icon: <MapPin className="w-6 h-6 text-purple-600" />,
-      bgIcon: 'bg-purple-500/10',
-      shortDesc: 'Check land parcel rates clearance, search histories, and physical planning requests.',
-      fullDetails: {
-        requirements: [
-          'Title deed or allotment letter copy',
-          'Most recent land rates clearance certificate (if applicable)',
-          'Owner identification documents'
-        ],
-        processingTime: '1 - 2 Working Days for clearances',
-        fees: 'Based on official county land valuation tables.'
-      },
-      route: '/applications/land'
+      key: 'land-services', title: 'Land Services', icon: <MapPin className="w-6 h-6 text-lime-600" />, bgIcon: 'bg-lime-500/10',
+      shortDesc: 'Submit requests for county land and property services.', route: '/applications/land-services',
+      fullDetails: { requirements: ['National ID or passport', 'Proof of ownership or occupancy', 'Property reference details', 'Relevant survey documents'], fields: ['applicantName', 'idNumber', 'parcelNumber', 'serviceType', 'propertyLocation', 'phoneNumber'], processingTime: '7 - 21 Working Days', fees: 'Prescribed county land-service fee.' }
+    },
+    {
+      key: 'vehicle-registration', title: 'Vehicle Registration', icon: <Building2 className="w-6 h-6 text-amber-600" />, bgIcon: 'bg-amber-500/10',
+      shortDesc: 'Register a new vehicle and obtain its registration details.', route: '/applications/vehicle-registration',
+      fullDetails: { requirements: ['National ID or passport', 'KRA PIN certificate', 'Invoice or customs entry documents', 'Import declaration form (where applicable)'], fields: ['ownerName', 'idNumber', 'kraPin', 'vehicleMake', 'vehicleModel', 'chassisNumber', 'engineNumber'], processingTime: '3 - 7 Working Days', fees: 'Prescribed NTSA registration fee; varies by vehicle type.' }
+    },
+    {
+      key: 'vehicle-transfer', title: 'Transfer of Vehicle Ownership', icon: <ArrowRight className="w-6 h-6 text-blue-600" />, bgIcon: 'bg-blue-500/10',
+      shortDesc: 'Submit a digital application to transfer ownership of a vehicle.', route: '/applications/vehicle-transfer',
+      fullDetails: { requirements: ['Original logbook or e-logbook details', 'Buyer and seller National IDs', 'Buyer and seller KRA PINs', 'Valid insurance certificate'], fields: ['buyerName', 'sellerName', 'buyerIdNumber', 'sellerIdNumber', 'registrationNumber', 'saleAmount'], processingTime: '1 - 3 Working Days', fees: 'Prescribed NTSA transfer fee based on engine capacity.' }
+    },
+    {
+      key: 'driving-licence', title: 'Driving Licence Services', icon: <Activity className="w-6 h-6 text-emerald-600" />, bgIcon: 'bg-emerald-500/10',
+      shortDesc: 'Apply for a provisional licence, renew a licence, or request a smart driving licence.', route: '/applications/driving-licence',
+      fullDetails: { requirements: ['National ID or passport', 'Existing licence for renewal or replacement', 'Current passport photo where required', 'Medical certificate for applicable classes'], fields: ['applicantName', 'idNumber', 'licenceNumber', 'licenceClass', 'serviceType', 'phoneNumber'], processingTime: 'Same day to 7 Working Days', fees: 'Prescribed NTSA fee; depends on licence service and validity period.' }
+    },
+    {
+      key: 'driving-test', title: 'Driving Test Booking', icon: <GraduationCap className="w-6 h-6 text-purple-600" />, bgIcon: 'bg-purple-500/10',
+      shortDesc: 'Book a driving test at an available NTSA test centre.', route: '/applications/driving-test',
+      fullDetails: { requirements: ['Provisional driving licence', 'National ID or passport', 'Driving school completion details'], fields: ['applicantName', 'idNumber', 'licenceClass', 'testCentre', 'preferredDate', 'phoneNumber'], processingTime: 'Subject to test-centre availability', fees: 'Prescribed NTSA driving test fee.' }
+    },
+    {
+      key: 'vehicle-inspection', title: 'Vehicle Inspection', icon: <Search className="w-6 h-6 text-orange-600" />, bgIcon: 'bg-orange-500/10',
+      shortDesc: 'Request inspection for transfer, importation, change of particulars, or roadworthiness.', route: '/applications/vehicle-inspection',
+      fullDetails: { requirements: ['National ID or passport', 'Original logbook or customs documents', 'Valid insurance certificate', 'Inspection booking details'], fields: ['ownerName', 'idNumber', 'registrationNumber', 'inspectionType', 'inspectionCentre', 'preferredDate'], processingTime: 'Subject to inspection-centre availability', fees: 'Prescribed NTSA inspection fee.' }
+    },
+    {
+      key: 'duplicate-logbook', title: 'Duplicate Logbook', icon: <FileText className="w-6 h-6 text-red-600" />, bgIcon: 'bg-red-500/10',
+      shortDesc: 'Request a replacement logbook for a lost, damaged, or defaced document.', route: '/applications/duplicate-logbook',
+      fullDetails: { requirements: ['National ID or passport', 'Police abstract for a lost logbook', 'Statutory declaration where required', 'Vehicle registration details'], fields: ['ownerName', 'idNumber', 'registrationNumber', 'reason', 'policeAbstractNumber'], processingTime: '7 - 14 Working Days', fees: 'Prescribed NTSA duplicate-logbook fee.' }
+    },
+    {
+      key: 'psv-licensing', title: 'PSV Licensing & Badges', icon: <ShieldCheck className="w-6 h-6 text-cyan-600" />, bgIcon: 'bg-cyan-500/10',
+      shortDesc: 'Apply for PSV licences, driver badges, and conductors’ certificates.', route: '/applications/psv-licensing',
+      fullDetails: { requirements: ['National ID or passport', 'Valid driving licence', 'Certificate of good conduct', 'Medical certificate and passport photo'], fields: ['applicantName', 'idNumber', 'licenceNumber', 'psvClass', 'vehicleRegistration', 'phoneNumber'], processingTime: '7 - 14 Working Days', fees: 'Prescribed NTSA PSV licensing fee.' }
     }
   ];
 

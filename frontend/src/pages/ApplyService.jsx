@@ -72,6 +72,41 @@ const FALLBACK_SERVICES = [
       { name: "medical_cert_no", label: "Designated Hospital Medical Exam Cert No.", type: "text", required: true, placeholder: "e.g. MED-2026-9988" },
       { name: "health_category", label: "Health Certificate Category", type: "text", required: true, placeholder: "e.g. Food Handler / Public Premises Hygiene" },
     ]
+  },
+  // NTSA motor vehicle and driver services
+  {
+    id: "5", title: "Vehicle Registration", county_id: "NTSA-VEH-05",
+    requirements: ["National ID or passport", "KRA PIN certificate", "Invoice or customs entry documents", "Import declaration form where applicable"],
+    fields: [
+      { name: "owner_name", label: "Registered Owner Full Name", type: "text", required: true, placeholder: "As shown on identification" },
+      { name: "id_number", label: "Owner National ID / Passport Number", type: "text", required: true, placeholder: "e.g. 12345678" },
+      { name: "kra_pin", label: "Owner KRA PIN", type: "text", required: true, placeholder: "e.g. A001234567Y" },
+      { name: "vehicle_make_model", label: "Vehicle Make and Model", type: "text", required: true, placeholder: "e.g. Toyota Axio" },
+      { name: "chassis_number", label: "Chassis Number", type: "text", required: true, placeholder: "Enter chassis number" },
+      { name: "engine_number", label: "Engine Number", type: "text", required: true, placeholder: "Enter engine number" }
+    ]
+  },
+  {
+    id: "6", title: "Transfer of Vehicle Ownership", county_id: "NTSA-VEH-06",
+    requirements: ["Original logbook or e-logbook details", "Buyer and seller National IDs", "Buyer and seller KRA PINs", "Valid insurance certificate"],
+    fields: [
+      { name: "registration_number", label: "Vehicle Registration Number", type: "text", required: true, placeholder: "e.g. KDA 123A" },
+      { name: "buyer_name", label: "Buyer Full Name", type: "text", required: true, placeholder: "Enter buyer name" },
+      { name: "buyer_id_number", label: "Buyer ID / Passport Number", type: "text", required: true, placeholder: "Enter buyer identification number" },
+      { name: "seller_name", label: "Seller Full Name", type: "text", required: true, placeholder: "Enter seller name" },
+      { name: "seller_id_number", label: "Seller ID / Passport Number", type: "text", required: true, placeholder: "Enter seller identification number" }
+    ]
+  },
+  {
+    id: "7", title: "Driving Licence Services", county_id: "NTSA-DL-07",
+    requirements: ["National ID or passport", "Existing licence for renewal or replacement", "Current passport photo where required", "Medical certificate for applicable classes"],
+    fields: [
+      { name: "applicant_name", label: "Applicant Full Name", type: "text", required: true, placeholder: "Enter full name" },
+      { name: "id_number", label: "National ID / Passport Number", type: "text", required: true, placeholder: "Enter identification number" },
+      { name: "service_type", label: "Licence Service Required", type: "text", required: true, placeholder: "e.g. New, renewal, replacement" },
+      { name: "licence_class", label: "Driving Licence Class", type: "text", required: true, placeholder: "e.g. B, C1, or E" },
+      { name: "phone_number", label: "Phone Number", type: "tel", required: true, placeholder: "e.g. 0712345678" }
+    ]
   }
 ];
 

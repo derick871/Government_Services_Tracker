@@ -49,7 +49,7 @@ export default function Dashboard() {
         const matched = records.find(r => r.tracking_number === recentTrackingRef);
         if (matched) {
           handleViewDetails(matched);
-        }
+        } 
       }
     } catch (err) {
       setError(err.message || "Failed to load dashboard data.");
