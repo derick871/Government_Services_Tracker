@@ -10,7 +10,7 @@ const baseURL = (
 
 const client = axios.create({
   baseURL,
-  withCredentials: true,
+  withCredentials: false,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
