@@ -6,7 +6,7 @@ import client from "../components/Services/api";
 // Fallback static definitions mirroring county portfolio cards
 const FALLBACK_SERVICES = [
   {
-    id: "1",
+    id: 1,
     title: "Single Business Permits",
     county_id: "REG-BP-01",
     requirements: [
@@ -23,7 +23,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: "2",
+    id: 2,
     title: "Lands & Property Rates",
     county_id: "REG-LND-02",
     requirements: [
@@ -40,7 +40,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: "3",
+    id: 3,
     title: "County Education Bursaries",
     county_id: "SOC-BUR-03",
     requirements: [
@@ -57,7 +57,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: "4",
+    id: 4,
     title: "Public Health & Facility Services",
     county_id: "HLT-PUB-04",
     requirements: [
@@ -75,7 +75,7 @@ const FALLBACK_SERVICES = [
   },
   // NTSA motor vehicle and driver services
   {
-    id: "5", title: "Vehicle Registration", county_id: "NTSA-VEH-05",
+    id: 5, title: "Vehicle Registration", county_id: "NTSA-VEH-05",
     requirements: ["National ID or passport", "KRA PIN certificate", "Invoice or customs entry documents", "Import declaration form where applicable"],
     fields: [
       { name: "owner_name", label: "Registered Owner Full Name", type: "text", required: true, placeholder: "As shown on identification" },
@@ -87,7 +87,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: "6", title: "Transfer of Vehicle Ownership", county_id: "NTSA-VEH-06",
+    id: 6, title: "Transfer of Vehicle Ownership", county_id: "NTSA-VEH-06",
     requirements: ["Original logbook or e-logbook details", "Buyer and seller National IDs", "Buyer and seller KRA PINs", "Valid insurance certificate"],
     fields: [
       { name: "registration_number", label: "Vehicle Registration Number", type: "text", required: true, placeholder: "e.g. KDA 123A" },
@@ -98,7 +98,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: "7", title: "Driving Licence Services", county_id: "NTSA-DL-07",
+    id: 7, title: "Driving Licence Services", county_id: "NTSA-DL-07",
     requirements: ["National ID or passport", "Existing licence for renewal or replacement", "Current passport photo where required", "Medical certificate for applicable classes"],
     fields: [
       { name: "applicant_name", label: "Applicant Full Name", type: "text", required: true, placeholder: "Enter full name" },
@@ -198,7 +198,9 @@ export default function ApplyService() {
       setError("");
 
       const payload = {
-        service_id: Number(selectedServiceId),
+        // DRF serializers normally expose the ForeignKey as `service`, not
+        // the database column name `service_id`.
+        service: Number(selectedServiceId),
         payload_data: {
           ...formData,
           description: generalDescription,
@@ -222,7 +224,14 @@ export default function ApplyService() {
       });
 
     } catch (err) {
-      setError(err.message || "Failed to submit application.");
+      // Show DRF's field-level validation response rather than only "400".
+      const responseData = err.response?.data;
+      const validationMessage = responseData && typeof responseData === "object"
+        ? Object.entries(responseData)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`)
+          .join(" | ")
+        : "";
+      setError(validationMessage || err.message || "Failed to submit application.");
     } finally {
       setSubmitting(false);
     }
@@ -309,6 +318,20 @@ export default function ApplyService() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="service_id_display" className="mb-2 block text-sm font-semibold text-slate-700">Service ID</label>
+                <input
+                  id="service_id_display"
+                  name="service_id"
+                  type="text"
+                  value={selectedServiceId}
+                  onChange={(e) => setSelectedServiceId(e.target.value)}
+                  required
+                  placeholder="Enter service ID"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                />
               </div>
 
               {/* Render Service-Specific Custom Inputs */}

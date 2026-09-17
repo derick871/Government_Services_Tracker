@@ -1,8 +1,9 @@
 import axios from "axios";
 
-const baseURL =
+const baseURL = (
   import.meta.env.VITE_API_BASE_URL ||
-  "https://government-services-tracker-6.onrender.com/api";
+  "https://government-services-tracker-6.onrender.com/api"
+).replace(/\/$/, "");
 
 const client = axios.create({
   baseURL,
@@ -16,9 +17,16 @@ const client = axios.create({
 
 client.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
-  (error) => Promise.reject(error)
 );
 
 let refreshRequest = null;

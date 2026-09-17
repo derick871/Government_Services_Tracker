@@ -18,9 +18,9 @@ export default function Home() {
   const handleApplyClick = (serviceRoute) => {
     if (!user) {
       // Redirect to login first, then pass state to redirect back or just prompt sign-in
-      navigate('/login', { state: { from: serviceRoute } });
+      navigate('/login', { state: { from: '/apply-service', serviceRoute } });
     } else {
-      navigate(serviceRoute);
+      navigate('/apply-service', { state: { serviceRoute } });
     }
   };
 
