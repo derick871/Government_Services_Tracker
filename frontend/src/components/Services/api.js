@@ -1,36 +1,35 @@
 import axios from "axios";
 
-const baseURL = (
-  import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL ||
-  "https://government-services-tracker-6.onrender.com/api"
+const rawBaseURL = (
+  import.meta.env.VITE_BASE_URL || 
+  import.meta.env.VITE_API_URL || 
+  "https://government-services-tracker-7.onrender.com"
+);
 
-  // console.log(VITE_API_URL)
+const baseURL = rawBaseURL.replace(/\/$/, "").replace(/\/api$/, "");
 
-).replace(/\/$/, "");
+console.log("API Base:", baseURL);
 
 const client = axios.create({
   baseURL,
-  withCredentials: false,
-  timeout: 10000,
+  withCredentials: false, 
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-client.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access_token");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    if (config.data instanceof FormData) {
-      delete config.headers["Content-Type"];
-    }
-    return config;
-  },
-);
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
+  return config;
+});
 
 let refreshRequest = null;
 
@@ -38,7 +37,7 @@ client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const isAuthRequest = originalRequest?.url?.startsWith("/auth/");
+    const isAuthRequest = originalRequest?.url?.includes("/auth/");
 
     if (
       error.response?.status !== 401 ||
@@ -51,12 +50,14 @@ client.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      refreshRequest ??= client.post("/auth/refresh/").finally(() => {
+      refreshRequest ??= client.post("/api/auth/refresh/").finally(() => {
         refreshRequest = null;
       });
       await refreshRequest;
       return client(originalRequest);
     } catch (refreshError) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
       return Promise.reject(refreshError);
     }
   }
