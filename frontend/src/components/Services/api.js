@@ -1,8 +1,11 @@
 import axios from "axios";
 
 const baseURL = (
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://government-services-tracker-6.onrender.com"
+  import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL ||
+  "https://government-services-tracker-6.onrender.com/api"
+
+  // console.log(VITE_API_URL)
+
 ).replace(/\/$/, "");
 
 const client = axios.create({

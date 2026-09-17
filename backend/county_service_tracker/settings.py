@@ -26,7 +26,6 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    # 'government-services-tracker.vercel.app',
     'government-services-tracker-6.onrender.com',
 ]
 
@@ -112,10 +111,10 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config("DATABASE_NAME", default="county_service_tracker_db"),
-            'USER': config("DATABASE_USER", default="postgres"),
-            'PASSWORD': config("DATABASE_PASSWORD", default="postgres"),
-            'PORT': config("DATABASE_PORT", default="5432"),
+            'NAME': config("DATABASE_NAME", default=""),
+            'USER': config("DATABASE_USER", default=""),
+            'PASSWORD': config("DATABASE_PASSWORD", default=""),
+            'PORT': config("DATABASE_PORT", default=""),
             'HOST': config("DATABASE_HOST", default="localhost"),
         }
     }
@@ -128,7 +127,6 @@ DEFAULT_CORS_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'https://government-services-tracker.vercel.app',
-    'https://government-services-tracker-eomvnif7y-derick871s-projects.vercel.app'
 
 ]
 
@@ -139,7 +137,7 @@ else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://government-services-tracker-eomvnif7y-derick871s-projects.vercel.app",
+        'https://government-services-tracker.vercel.app',
     ]
 
 CSRF_TRUSTED_ORIGINS = [

@@ -10,7 +10,15 @@ class CountyNotice(models.Model):
         LAND_RATES = "LAND_RATES", "Land Rates"
         BURSARY = "BURSARY", "Bursary"
         HEALTH_CERT = "HEALTH_CERT", "Health Certificate"
+        VEHICLE_REGISTRATION = "VEHICLE_REGISTRATION", "Vehicle_registration"
+        VEHICLE_TRANSFER = "VEHICLE_TRANSFER ","Vehicle_transfer"
+        DRIVING_LICENCE = "DRIVING_LICENCE" , "Driving_licence"
+        DRIVING_TEST = "DRIVING_TEST", "Driving_test"
+        VEHICLE_INSPECTION = "VEHICLE_INSPECTION" ,"Vehicle_inspection"
+        DUPLICATE_LOGBOOK = "DUPLICATE_LOGBOOK" ,"Duplicate_logbook"
+        PSV_LICENSING = "PSV_LICENSING", "Psv_licensing"
         OTHERS = "OTHER", "Other"
+
 
     county_id = models.CharField(max_length=50, db_index=True)
     service_type = models.CharField(

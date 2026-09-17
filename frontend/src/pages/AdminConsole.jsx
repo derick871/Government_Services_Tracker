@@ -5,6 +5,27 @@ export default function AdminConsole() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [adminAuthenticated, setAdminAuthenticated] = useState(
+    sessionStorage.getItem("adminAuthenticated") === "true"
+  );
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
+
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
+
+  const handleAdminLogin = (event) => {
+    event.preventDefault();
+
+    if (password === adminPassword) {
+      sessionStorage.setItem("adminAuthenticated", "true");
+      setAdminAuthenticated(true);
+      setLoginError("");
+      return;
+    }
+
+    setLoginError("Invalid administrator password.");
+  };
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -31,14 +52,27 @@ export default function AdminConsole() {
     fetchApplications();
   }, []);
 
-  const handleReview = (application) => {
-    console.log(
-      "Reviewing application:",
-      application.tracking_number || application.id
-    );
+  const handleStatusChange = async (application, status) => {
+    if (!application.id || status === application.status) return;
 
-    // Add navigation here later
-    // navigate(`/admin/applications/${application.id}`);
+    try {
+      setUpdatingId(application.id);
+      setError("");
+      const { data } = await client.patch(`/applications/${application.id}/`, {
+        status,
+      });
+
+      setApplications((current) =>
+        current.map((item) =>
+          item.id === application.id ? { ...item, ...data, status } : item
+        )
+      );
+    } catch (err) {
+      console.error("Application status update error:", err);
+      setError(err.response?.data?.detail || err.message || "Failed to update application status.");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -68,6 +102,31 @@ export default function AdminConsole() {
     return (
       <div className="p-8 text-slate-600 animate-pulse font-medium">
         Loading admin console records...
+      </div>
+    );
+  }
+
+  if (!adminAuthenticated) {
+    return (
+      <div className="mx-auto max-w-md p-6 md:p-8">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow">
+          <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
+          <p className="mt-2 text-sm text-slate-500">Enter the administrator password to continue.</p>
+          <form onSubmit={handleAdminLogin} className="mt-6 space-y-4">
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Administrator password"
+              required
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
+            {loginError && <p className="text-sm text-red-600">{loginError}</p>}
+            <button className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+              Sign in
+            </button>
+          </form>
+        </div>
       </div>
     );
   }
@@ -183,13 +242,19 @@ export default function AdminConsole() {
                       </td>
 
                       <td className="p-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleReview(app)}
-                          className="rounded-md bg-blue-600 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-blue-700"
+                        <select
+                          value={status}
+                          disabled={updatingId === app.id}
+                          onChange={(event) => handleStatusChange(app, event.target.value)}
+                          className="rounded-md border border-slate-300 px-2 py-1.5 text-xs font-medium text-slate-700 disabled:opacity-50"
                         >
-                          Review
-                        </button>
+                          <option value="PENDING">Pending</option>
+                          <option value="UNDER_REVIEW">Under Review</option>
+                          <option value="ACTION_REQUIRED">Action Required</option>
+                          <option value="APPROVED">Approved</option>
+                          <option value="REJECTED">Rejected</option>
+                          <option value="FINALIZED">Finalized</option>
+                        </select>
                       </td>
                     </tr>
                   );
