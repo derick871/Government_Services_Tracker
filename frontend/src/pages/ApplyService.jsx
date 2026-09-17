@@ -6,7 +6,7 @@ import client from "../components/Services/api";
 // Fallback static definitions mirroring county portfolio cards
 const FALLBACK_SERVICES = [
   {
-    id: 1,
+    id: "1",
     title: "Single Business Permits",
     county_id: "REG-BP-01",
     requirements: [
@@ -23,7 +23,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: 2,
+    id: "2",
     title: "Lands & Property Rates",
     county_id: "REG-LND-02",
     requirements: [
@@ -32,6 +32,7 @@ const FALLBACK_SERVICES = [
       "Current Land Rates clearance certificate or statement",
       "Registered Owner's KRA PIN and National ID copy"
     ],
+
     fields: [
       { name: "lr_number", label: "Land Reference (LR) / Plot Number", type: "text", required: true, placeholder: "e.g. Nairobi/Block 91/124" },
       { name: "owner_id_number", label: "Registered Owner ID / Passport Number", type: "text", required: true, placeholder: "e.g. 12345678" },
@@ -39,16 +40,20 @@ const FALLBACK_SERVICES = [
       { name: "rates_account", label: "Current Rates Account Number", type: "text", required: false, placeholder: "Optional billing account reference" },
     ]
   },
+
   {
-    id: 3,
+
+    id: "3",
     title: "County Education Bursaries",
     county_id: "SOC-BUR-03",
+
     requirements: [
       "Copy of applicant/student National ID or Birth Certificate",
       "Active admission letter and current fee structure from institution",
       "Parent/Guardian National ID copy",
       "Chief's recommendation letter confirming financial vulnerability"
     ],
+
     fields: [
       { name: "student_full_name", label: "Student Full Name", type: "text", required: true, placeholder: "As per ID or Birth Certificate" },
       { name: "institution_name", label: "Learning Institution Name", type: "text", required: true, placeholder: "e.g. University of Nairobi / High School" },
@@ -56,8 +61,9 @@ const FALLBACK_SERVICES = [
       { name: "ward_location", label: "County Ward / Constituency", type: "text", required: true, placeholder: "e.g. Kilimani Ward" },
     ]
   },
+
   {
-    id: 4,
+    id: "4",
     title: "Public Health & Facility Services",
     county_id: "HLT-PUB-04",
     requirements: [
@@ -73,10 +79,12 @@ const FALLBACK_SERVICES = [
       { name: "health_category", label: "Health Certificate Category", type: "text", required: true, placeholder: "e.g. Food Handler / Public Premises Hygiene" },
     ]
   },
+
   // NTSA motor vehicle and driver services
   {
-    id: 5, title: "Vehicle Registration", county_id: "NTSA-VEH-05",
+    id: "5", title: "Vehicle Registration", county_id: "NTSA-VEH-05",
     requirements: ["National ID or passport", "KRA PIN certificate", "Invoice or customs entry documents", "Import declaration form where applicable"],
+
     fields: [
       { name: "owner_name", label: "Registered Owner Full Name", type: "text", required: true, placeholder: "As shown on identification" },
       { name: "id_number", label: "Owner National ID / Passport Number", type: "text", required: true, placeholder: "e.g. 12345678" },
@@ -86,8 +94,9 @@ const FALLBACK_SERVICES = [
       { name: "engine_number", label: "Engine Number", type: "text", required: true, placeholder: "Enter engine number" }
     ]
   },
+
   {
-    id: 6, title: "Transfer of Vehicle Ownership", county_id: "NTSA-VEH-06",
+    id: "6", title: "Transfer of Vehicle Ownership", county_id: "NTSA-VEH-06",
     requirements: ["Original logbook or e-logbook details", "Buyer and seller National IDs", "Buyer and seller KRA PINs", "Valid insurance certificate"],
     fields: [
       { name: "registration_number", label: "Vehicle Registration Number", type: "text", required: true, placeholder: "e.g. KDA 123A" },
@@ -98,7 +107,7 @@ const FALLBACK_SERVICES = [
     ]
   },
   {
-    id: 7, title: "Driving Licence Services", county_id: "NTSA-DL-07",
+    id: "7", title: "Driving Licence Services", county_id: "NTSA-DL-07",
     requirements: ["National ID or passport", "Existing licence for renewal or replacement", "Current passport photo where required", "Medical certificate for applicable classes"],
     fields: [
       { name: "applicant_name", label: "Applicant Full Name", type: "text", required: true, placeholder: "Enter full name" },
@@ -109,30 +118,24 @@ const FALLBACK_SERVICES = [
     ]
   }
 ];
-
 export default function ApplyService() {
   const { serviceId } = useParams() || {};
   const navigate = useNavigate();
-
   const [servicesList, setServicesList] = useState(FALLBACK_SERVICES);
   const [selectedServiceId, setSelectedServiceId] = useState(serviceId || "1");
   const [formData, setFormData] = useState({});
   const [generalDescription, setGeneralDescription] = useState("");
-
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-
   useEffect(() => {
     let mounted = true;
     const fetchNotices = async () => {
       try {
         setLoading(true);
         setError("");
-
         const { data } = await client.get("/county-notices/");
         const notices = Array.isArray(data) ? data : data?.results || [];
-
         if (mounted && notices.length > 0) {
           const combinedList = notices.map(svc => {
             const fallbackMatch = FALLBACK_SERVICES.find(f => String(f.id) === String(svc.id) || f.county_id === svc.county_id);
@@ -140,6 +143,7 @@ export default function ApplyService() {
               ...svc,
               requirements: svc.requirements || fallbackMatch?.requirements || [],
               fields: svc.fields || fallbackMatch?.fields || [
+
                 { name: "details", label: "Application Details", type: "text", required: true, placeholder: "Provide information..." }
               ]
             };
@@ -150,6 +154,7 @@ export default function ApplyService() {
         if (mounted) {
           setServicesList(FALLBACK_SERVICES);
         }
+
       } finally {
         if (mounted) {
           setLoading(false);
@@ -159,15 +164,12 @@ export default function ApplyService() {
         }
       }
     };
-
     fetchNotices();
     return () => { mounted = false; };
   }, [serviceId]);
-
   const selectedNotice = useMemo(() => {
     return servicesList.find((item) => String(item.id) === String(selectedServiceId)) || servicesList[0];
   }, [servicesList, selectedServiceId]);
-
   useEffect(() => {
     if (selectedNotice?.fields) {
       const initialFields = {};
@@ -178,80 +180,86 @@ export default function ApplyService() {
       setGeneralDescription("");
     }
   }, [selectedNotice]);
-
   const handleInputChange = (fieldName, value) => {
     setFormData(prev => ({
       ...prev,
       [fieldName]: value
     }));
-  };
 
+  };
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!selectedServiceId) {
       setError("Please select a government service to apply for.");
       return;
     }
-
     try {
       setSubmitting(true);
       setError("");
-
       const payload = {
-        // DRF serializers normally expose the ForeignKey as `service`, not
-        // the database column name `service_id`.
-        service: Number(selectedServiceId),
+        service_id: Number(selectedServiceId),
         payload_data: {
           ...formData,
           description: generalDescription,
           service_code: selectedNotice?.county_id || "REG-BP-01",
-          service_title: selectedNotice?.title || "General Application"
+          service_title: selectedNotice?.title || "General Application",
         },
       };
-
       const { data } = await client.post("/applications/", payload);
+      const application = data?.application || data || {};
+      const trackingNumber = application.tracking_number || `REG-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      const trackingNum = data.tracking_number || `REG-${Math.floor(100000 + Math.random() * 900000)}`;
-
-      // Redirect directly to the Payment Page, passing application metadata in state
+      // Navigate to payment only after the application is created successfully.
       navigate("/paymentpage", {
+        replace: true,
         state: {
-          trackingNumber: trackingNum,
-          applicationId: data.id || trackingNum,
-          serviceTitle: selectedNotice?.title,
-          serviceCode: selectedNotice?.county_id
-        }
+          applicationId: application.id || trackingNumber,
+          trackingNumber,
+          serviceTitle: selectedNotice?.title || "General Application",
+          serviceCode: selectedNotice?.county_id || "REG-BP-01",
+        },
       });
-
     } catch (err) {
-      // Show DRF's field-level validation response rather than only "400".
-      const responseData = err.response?.data;
-      const validationMessage = responseData && typeof responseData === "object"
-        ? Object.entries(responseData)
-          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`)
-          .join(" | ")
-        : "";
-      setError(validationMessage || err.message || "Failed to submit application.");
+
+      setError(err.message || "Failed to submit application.");
+
     } finally {
+
       setSubmitting(false);
+
     }
+
   };
 
+
+
   if (loading) {
+
     return (
+
       <main className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
+
         <div className="space-y-3 text-center">
+
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+
           <p className="text-sm font-medium text-slate-600">Loading secure service application portal...</p>
+
         </div>
+
       </main>
+
     );
+
   }
 
-  return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 md:px-8">
-      <div className="mx-auto max-w-4xl space-y-6">
 
+
+  return (
+
+    <main className="min-h-screen bg-slate-50 py-10 px-4 md:px-8">
+
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* Navigation back */}
         <button
           type="button"
@@ -260,7 +268,6 @@ export default function ApplyService() {
         >
           <ArrowLeft size={16} /> Back to Dashboard Portal
         </button>
-
         <header className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 text-blue-600 text-xs font-semibold uppercase tracking-wider mb-1">
             <ShieldCheck size={16} /> Official eCitizen-Style Portal
@@ -270,19 +277,18 @@ export default function ApplyService() {
           </h1>
           <p className="text-sm text-slate-500 mt-1">Complete the digital form below customized for your selected county service.</p>
         </header>
-
         <div className="grid gap-6 lg:grid-cols-3">
-
           {/* Service Metadata Sidebar */}
           <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+
             <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
                 {selectedNotice?.county_id || "Active Portfolio"}
               </span>
               <h2 className="text-lg font-bold text-slate-900 pt-1">{selectedNotice?.title || "Select Service"}</h2>
             </div>
-
             {selectedNotice?.requirements?.length > 0 && (
+
               <div className="pt-3 border-t border-slate-100 space-y-2">
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Required Information & Docs:</p>
                 <ul className="list-disc list-inside text-xs text-slate-600 space-y-1.5 leading-relaxed">
@@ -301,7 +307,6 @@ export default function ApplyService() {
                 {error}
               </div>
             )}
-
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="service_id" className="mb-2 block text-sm font-semibold text-slate-700">Select Portfolio Service</label>
@@ -319,25 +324,11 @@ export default function ApplyService() {
                   ))}
                 </select>
               </div>
-
-              <div>
-                <label htmlFor="service_id_display" className="mb-2 block text-sm font-semibold text-slate-700">Service ID</label>
-                <input
-                  id="service_id_display"
-                  name="service_id"
-                  type="text"
-                  value={selectedServiceId}
-                  onChange={(e) => setSelectedServiceId(e.target.value)}
-                  required
-                  placeholder="Enter service ID"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
-                />
-              </div>
-
               {/* Render Service-Specific Custom Inputs */}
               {selectedNotice?.fields?.length > 0 && (
                 <div className="space-y-4 pt-2 pb-2 border-t border-slate-100">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 pt-2">Service-Specific Particulars</h3>
+
                   {selectedNotice.fields.map((field) => (
                     <div key={field.name}>
                       <label htmlFor={field.name} className="mb-1.5 block text-sm font-semibold text-slate-700">
@@ -356,19 +347,16 @@ export default function ApplyService() {
                   ))}
                 </div>
               )}
-
               <div>
                 <label htmlFor="description" className="mb-2 block text-sm font-semibold text-slate-700">Additional Information / Supporting Notes</label>
                 <textarea
                   id="description"
                   value={generalDescription}
-                  onChange={(e) => setGeneralDescription(e.target.value)}
-                  rows={4}
+                  onChange={(e) => setGeneralDescription(e.target.value)} rows={4}
                   placeholder="Provide any additional information/instructions"
                   className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-800"
                 />
               </div>
-
               <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
                 <button
                   type="button"
@@ -391,4 +379,4 @@ export default function ApplyService() {
       </div>
     </main>
   );
-}
+} 
